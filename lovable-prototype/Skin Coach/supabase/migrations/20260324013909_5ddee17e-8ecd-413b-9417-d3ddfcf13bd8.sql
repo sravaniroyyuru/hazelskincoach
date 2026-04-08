@@ -1,0 +1,1 @@
+ALTER TABLE public.routine_steps ADD COLUMN usage_notes text DEFAULT '';
