@@ -4,7 +4,8 @@ import type { VapiWebhookEvent } from '@/lib/vapi/client'
 
 export async function POST(request: NextRequest) {
   const body: VapiWebhookEvent = await request.json()
-  const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = (await createClient()) as any
 
   const { type, call } = body
 

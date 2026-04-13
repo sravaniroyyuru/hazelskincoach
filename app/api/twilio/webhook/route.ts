@@ -19,13 +19,15 @@ export async function POST(request: NextRequest) {
   const from = params.From
   const body = params.Body ?? ''
 
-  const { data: patient } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+  const { data: patient } = await db
     .from('patients')
     .select('id, clinic_id')
     .eq('phone', from)
     .maybeSingle()
 
-  await supabase.from('sms_logs').insert({
+  await db.from('sms_logs').insert({
     clinic_id: patient?.clinic_id ?? '',
     patient_id: patient?.id ?? null,
     twilio_sid: params.MessageSid,
