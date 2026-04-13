@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveSnapshot, savePhotoSet } from '@/lib/patient/storage'
-import type { SkinType, SkinConcern, RoutineGoal } from '@/types/patient'
+import type { SkinType, SkinConcern, RoutineGoal, RoutineProduct } from '@/types/patient'
 import type { PhotoAngle } from '@/components/patient/SkinCamera'
 import SkinCamera from '@/components/patient/SkinCamera'
+import ProductCamera from '@/components/patient/ProductCamera'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Leaf, ChevronRight, Check } from 'lucide-react'
+import { Leaf, ChevronRight, Check, Loader2, ScanLine, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid'
 
 const SKIN_TYPES: { value: SkinType; label: string; description: string }[] = [
   { value: 'oily',        label: 'Oily',         description: 'Shiny, enlarged pores' },
@@ -42,8 +44,8 @@ const GOALS: { value: RoutineGoal; label: string; emoji: string }[] = [
 
 const PHOTO_ANGLES: PhotoAngle[] = ['front', 'left-side', 'right-side']
 
-type Step = 'name' | 'skin-type' | 'concerns' | 'goals' | 'photos' | 'welcome'
-const STEPS: Step[] = ['name', 'skin-type', 'concerns', 'goals', 'photos', 'welcome']
+type Step = 'name' | 'skin-type' | 'concerns' | 'goals' | 'products' | 'photos' | 'welcome'
+const STEPS: Step[] = ['name', 'skin-type', 'concerns', 'goals', 'products', 'photos', 'welcome']
 
 const variants = {
   enter: { opacity: 0, x: 30 },
@@ -58,7 +60,14 @@ export default function OnboardingPage() {
   const [skinType, setSkinType] = useState<SkinType | null>(null)
   const [concerns, setConcerns] = useState<SkinConcern[]>([])
   const [goals, setGoals] = useState<RoutineGoal[]>([])
+  const [products, setProducts] = useState<RoutineProduct[]>([])
   const [photosCaptured, setPhotosCaptured] = useState(false)
+
+  // Product search state
+  const [productQuery, setProductQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [foundProduct, setFoundProduct] = useState<Partial<RoutineProduct> | null>(null)
+  const [showCamera, setShowCamera] = useState(false)
 
   function toggleConcern(c: SkinConcern) {
     setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
@@ -70,6 +79,53 @@ export default function OnboardingPage() {
   function next() {
     const idx = STEPS.indexOf(step)
     if (idx < STEPS.length - 1) setStep(STEPS[idx + 1])
+  }
+
+  async function handleProductSearch() {
+    if (!productQuery.trim()) return
+    setIsSearching(true)
+    setFoundProduct(null)
+    try {
+      const res = await fetch('/api/patient/product-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: productQuery }),
+      })
+      const data = await res.json()
+      setFoundProduct(data)
+    } catch {
+      toast.error('Could not find product — try a different name')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  function addFoundProduct() {
+    if (!foundProduct?.name) return
+    const p: RoutineProduct = {
+      id: uuidv4(),
+      name: foundProduct.name ?? '',
+      brand: foundProduct.brand ?? null,
+      category: foundProduct.category ?? null,
+      keyIngredients: foundProduct.keyIngredients ?? [],
+      flags: foundProduct.flags ?? [],
+      status: 'active',
+    }
+    setProducts(prev => [...prev, p])
+    setFoundProduct(null)
+    setProductQuery('')
+    toast.success(`${p.name} added`)
+  }
+
+  function handleScannedProduct(scanned: Omit<RoutineProduct, 'id' | 'status'>) {
+    const p: RoutineProduct = { id: uuidv4(), status: 'active', ...scanned }
+    setProducts(prev => [...prev, p])
+    setShowCamera(false)
+    toast.success(`${p.name} added`)
+  }
+
+  function removeProduct(id: string) {
+    setProducts(prev => prev.filter(p => p.id !== id))
   }
 
   function handlePhotosComplete(photos: Record<PhotoAngle, string>) {
@@ -93,7 +149,7 @@ export default function OnboardingPage() {
       skinType,
       concerns,
       goals,
-      products: [],
+      products,
       routineSteps: [],
     })
     router.replace('/patient/today')
@@ -229,6 +285,114 @@ export default function OnboardingPage() {
           </motion.div>
         )}
 
+        {/* Products */}
+        {step === 'products' && !showCamera && (
+          <motion.div key="products" variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-5">
+            <div>
+              <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your products</h1>
+              <p className="text-stone-500 text-sm">
+                Add anything you already use. Hazel will track ingredients and flag any conflicts.
+              </p>
+            </div>
+
+            {/* Search */}
+            <div className="bg-white rounded-2xl p-4 border border-stone-200 flex flex-col gap-3">
+              <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">Search by name</p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g. CeraVe Moisturiser, Niacinamide..."
+                  value={productQuery}
+                  onChange={e => setProductQuery(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleProductSearch()}
+                  className="border-stone-200 h-10 text-sm"
+                />
+                <Button size="sm" onClick={handleProductSearch} disabled={isSearching || !productQuery.trim()}
+                  className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-10 px-3 shrink-0">
+                  {isSearching ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
+                </Button>
+              </div>
+
+              {foundProduct && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-[#F5F0EB] rounded-xl border border-[#E8DDD4]">
+                  <p className="text-sm font-medium text-stone-800">{foundProduct.name}</p>
+                  {foundProduct.brand && <p className="text-xs text-stone-500">{foundProduct.brand}</p>}
+                  {foundProduct.keyIngredients && foundProduct.keyIngredients.length > 0 && (
+                    <p className="text-xs text-stone-400 mt-1">
+                      Key: {foundProduct.keyIngredients.slice(0, 3).join(', ')}
+                    </p>
+                  )}
+                  <Button size="sm" onClick={addFoundProduct}
+                    className="mt-2 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-7 text-xs">
+                    + Add this product
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Camera scan */}
+            <button onClick={() => setShowCamera(true)}
+              className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-stone-200 text-left hover:border-[#7C6B5A] transition-colors">
+              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center shrink-0">
+                <ScanLine size={18} className="text-[#7C6B5A]" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-stone-800">Scan a product photo</p>
+                <p className="text-xs text-stone-400">Point your camera at the label or bottle</p>
+              </div>
+            </button>
+
+            {/* Added products */}
+            {products.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">Added ({products.length})</p>
+                {products.map(p => (
+                  <div key={p.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-stone-100">
+                    <div>
+                      <p className="text-sm font-medium text-stone-800">{p.name}</p>
+                      {p.brand && <p className="text-xs text-stone-400">{p.brand}</p>}
+                    </div>
+                    <button onClick={() => removeProduct(p.id)} className="text-stone-300 hover:text-red-400 p-1">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 pt-1">
+              <Button onClick={next}
+                className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+                {products.length > 0 ? `Continue with ${products.length} product${products.length > 1 ? 's' : ''}` : 'Continue'} <ChevronRight size={16} className="ml-1" />
+              </Button>
+              {products.length === 0 && (
+                <button onClick={next} className="text-sm text-stone-400 hover:text-stone-600 py-1">
+                  Skip for now — I'll add these later
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Product camera */}
+        {step === 'products' && showCamera && (
+          <motion.div key="camera" variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-semibold text-stone-800">Scan product</h1>
+              <button onClick={() => setShowCamera(false)} className="text-stone-400 hover:text-stone-600">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-stone-500 text-sm -mt-2">Point at the label or front of the bottle.</p>
+            <ProductCamera
+              onProductFound={handleScannedProduct}
+              onClose={() => setShowCamera(false)}
+            />
+          </motion.div>
+        )}
+
         {/* Photos */}
         {step === 'photos' && (
           <motion.div key="photos" variants={variants} initial="enter" animate="center" exit="exit"
@@ -262,6 +426,7 @@ export default function OnboardingPage() {
               <p className="text-stone-500 text-sm leading-relaxed">
                 Hazel will help you track your skin, understand your patterns, and feel more at ease — one day at a time.
                 {photosCaptured && ' Your baseline photos are saved.'}
+                {products.length > 0 && ` ${products.length} product${products.length > 1 ? 's' : ''} added to your library.`}
               </p>
             </div>
             <Button onClick={handleComplete}

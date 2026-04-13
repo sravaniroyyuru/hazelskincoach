@@ -6,16 +6,18 @@ import type { PatientSnapshot, CoachMessage } from '@/types/patient'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Leaf, Send, Loader2 } from 'lucide-react'
+import { Leaf, Send, Loader2, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { motion } from 'framer-motion'
+
+const ASSESSMENT_PROMPT = "I'd like a personalised skin assessment. Based on what you know about me, and a few questions, give me a thorough understanding of my skin."
 
 const STARTERS = [
   { text: 'Today I felt really anxious about my skin', emoji: '💭' },
   { text: "I've been cancelling plans because of my skin", emoji: '😔' },
   { text: "I'm frustrated — nothing seems to be working", emoji: '😤' },
   { text: 'What should I know about my skin type?', emoji: '🌿' },
-  { text: 'Help me understand what\'s in my routine', emoji: '🧴' },
+  { text: "Help me understand what's in my routine", emoji: '🧴' },
 ]
 
 export default function CoachPage() {
@@ -118,17 +120,41 @@ export default function CoachPage() {
       {/* Messages */}
       <ScrollArea className="flex-1 px-5 py-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-6 py-8">
+          <div className="flex flex-col gap-4 py-6">
+            {/* Header */}
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-[#F5F0EB] flex items-center justify-center mx-auto mb-3">
                 <Leaf size={20} className="text-[#7C6B5A]" />
               </div>
               <p className="text-stone-700 font-medium">This is your space</p>
               <p className="text-stone-400 text-sm mt-1 leading-relaxed">
-                Talk about how your skin is making you feel, or ask anything about skincare. Hazel is here for both.
+                Talk about how your skin is making you feel, or ask anything. Hazel is here for both.
               </p>
             </div>
-            <div className="flex flex-col gap-2 w-full">
+
+            {/* Skin assessment CTA */}
+            <button
+              onClick={() => sendMessage(ASSESSMENT_PROMPT)}
+              className="w-full p-4 bg-[#7C6B5A] rounded-2xl text-left text-white flex items-center gap-3 hover:bg-[#6B5A4A] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <Sparkles size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Get my skin assessment</p>
+                <p className="text-xs text-white/70 mt-0.5">Hazel will ask a few questions and give you a personalised skin profile</p>
+              </div>
+            </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-stone-100" />
+              <p className="text-xs text-stone-400">or start a conversation</p>
+              <div className="flex-1 h-px bg-stone-100" />
+            </div>
+
+            {/* Starter prompts */}
+            <div className="flex flex-col gap-2">
               {STARTERS.map(s => (
                 <button
                   key={s.text}

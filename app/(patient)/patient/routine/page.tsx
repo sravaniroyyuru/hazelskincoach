@@ -307,58 +307,47 @@ export default function RoutinePage() {
                       </SelectContent>
                     </Select>
                   )}
-                  <div className="flex gap-3">
+
+                  {/* Always-visible search */}
+                  <div className="flex flex-col gap-2 p-3 bg-stone-50 rounded-xl border border-stone-100">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Search product name or brand..."
+                        value={productSearch}
+                        onChange={e => { setProductSearch(e.target.value); setFoundProduct(null) }}
+                        onKeyDown={e => e.key === 'Enter' && handleProductLookup()}
+                        className="border-stone-200 h-9 text-sm bg-white"
+                      />
+                      <Button size="sm" onClick={handleProductLookup} disabled={isLooking || !productSearch.trim()}
+                        className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-9 px-3 shrink-0">
+                        {isLooking ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
+                      </Button>
+                    </div>
+                    {foundProduct && (
+                      <div className="p-3 bg-white rounded-lg border border-stone-200">
+                        <p className="text-sm font-medium text-stone-800">{foundProduct.name}</p>
+                        {foundProduct.brand && <p className="text-xs text-stone-500">{foundProduct.brand}</p>}
+                        {foundProduct.keyIngredients && foundProduct.keyIngredients.length > 0 && (
+                          <p className="text-xs text-stone-400 mt-1">
+                            Key: {foundProduct.keyIngredients.slice(0, 3).join(', ')}
+                          </p>
+                        )}
+                        <Button size="sm" className="mt-2 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-7 text-xs"
+                          onClick={handleAddFoundProduct}>
+                          Add to library
+                        </Button>
+                      </div>
+                    )}
                     <button
-                      className="text-xs text-[#7C6B5A] text-left hover:underline"
-                      onClick={() => setShowProductSearch(true)}
-                    >
-                      + Search by name
-                    </button>
-                    <span className="text-stone-300">·</span>
-                    <button
-                      className="text-xs text-[#7C6B5A] text-left hover:underline flex items-center gap-1"
+                      className="text-xs text-[#7C6B5A] text-left hover:underline flex items-center gap-1 self-start"
                       onClick={() => setShowProductCamera(true)}
                     >
-                      <ScanLine size={11} /> Scan product photo
+                      <ScanLine size={11} /> Or scan product photo
                     </button>
                   </div>
                 </div>
               )}
             </div>
-
-            {showProductSearch && (
-              <div className="flex flex-col gap-2 p-3 bg-stone-50 rounded-xl border border-stone-200">
-                <p className="text-xs text-stone-500">Search product name or brand</p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="e.g. La Roche-Posay Effaclar..."
-                    value={productSearch}
-                    onChange={e => setProductSearch(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleProductLookup()}
-                    className="border-stone-200 h-9 text-sm"
-                  />
-                  <Button size="sm" onClick={handleProductLookup} disabled={isLooking}
-                    className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-9 px-3 shrink-0">
-                    {isLooking ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
-                  </Button>
-                </div>
-                {foundProduct && (
-                  <div className="p-3 bg-white rounded-lg border border-stone-200">
-                    <p className="text-sm font-medium text-stone-800">{foundProduct.name}</p>
-                    {foundProduct.brand && <p className="text-xs text-stone-500">{foundProduct.brand}</p>}
-                    {foundProduct.keyIngredients && foundProduct.keyIngredients.length > 0 && (
-                      <p className="text-xs text-stone-400 mt-1">
-                        Key: {foundProduct.keyIngredients.slice(0, 3).join(', ')}
-                      </p>
-                    )}
-                    <Button size="sm" className="mt-2 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-7 text-xs"
-                      onClick={handleAddFoundProduct}>
-                      Add to library
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
 
             <div>
               <label className="text-xs text-stone-500 mb-1.5 block">Usage notes (optional)</label>
