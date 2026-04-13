@@ -7,7 +7,28 @@
       "Bash(cp -r /Users/sravaniroyyuru/Documents/hazel-app/. /Users/sravaniroyyuru/Documents/Hazel/)",
       "Bash(rm -rf /Users/sravaniroyyuru/Documents/hazel-app)",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest init --defaults)"
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npx shadcn@latest add card input textarea badge dialog select tabs progress toast --yes)",
+      "Bash(npx shadcn@latest add card input textarea badge dialog select tabs progress sonner separator scroll-area --yes)",
+      "Bash(npm run:*)",
+      "Bash(npm ci:*)",
+      "Bash(npx --no next build)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/ai/package.json'\\); console.log\\(pkg.version, Object.keys\\(pkg.exports || {}\\).slice\\(0, 10\\)\\)\")",
+      "Bash(node -e \"const {streamText} = require\\('./node_modules/ai/dist/index.js'\\); const r = {}; console.log\\(Object.getOwnPropertyNames\\(Object.getPrototypeOf\\(r\\)\\)\\)\")",
+      "Bash(node -e \"const pkg = require\\('./node_modules/ai/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const content = fs.readFileSync\\('./node_modules/next/dist/build/utils.js', 'utf8'\\); const match = content.match\\(/proxy.*convention/i\\); console.log\\(match ? match[0] : 'not found'\\)\")",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git checkout:*)",
+      "Bash(GIT_EDITOR=true git merge --continue)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
