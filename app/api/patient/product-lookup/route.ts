@@ -16,6 +16,10 @@ const ProductSchema = z.object({
 })
 
 export async function POST(request: Request) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: 'ANTHROPIC_API_KEY not configured on server' }, { status: 500 })
+  }
+
   const { query } = await request.json()
 
   try {
@@ -32,7 +36,8 @@ If the product doesn't exist or you're unsure, make a reasonable inference based
     })
 
     return Response.json(object)
-  } catch {
-    return Response.json({ error: 'Could not look up product' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Could not look up product'
+    return Response.json({ error: message }, { status: 500 })
   }
 }

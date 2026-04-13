@@ -66,7 +66,10 @@ export default function CoachPage() {
         }),
       })
 
-      if (!res.ok || !res.body) throw new Error('Failed')
+      if (!res.ok || !res.body) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error ?? `Server error ${res.status}`)
+      }
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -83,12 +86,13 @@ export default function CoachPage() {
           return msgs
         })
       }
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not connect'
       setMessages(prev => {
         const msgs = [...prev]
         msgs[msgs.length - 1] = {
           role: 'assistant',
-          content: 'Sorry, I couldn\'t connect. Please try again.',
+          content: `Sorry, I couldn't respond right now — ${msg}. Please try again.`,
         }
         return msgs
       })

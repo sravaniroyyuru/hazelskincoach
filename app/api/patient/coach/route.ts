@@ -1,13 +1,16 @@
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { streamText } from 'ai'
 
-export const runtime = 'edge'
-
+// Node.js runtime (not edge) for simpler streaming + better error visibility
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 export async function POST(request: Request) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: 'ANTHROPIC_API_KEY not configured on server' }, { status: 500 })
+  }
+
   const { messages, context } = await request.json()
 
   const systemPrompt = `You are Hazel — a warm, grounding companion for people navigating their skin journey. You hold two roles equally: emotional support and practical skin knowledge.

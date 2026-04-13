@@ -10,7 +10,7 @@ import SkinCamera from '@/components/patient/SkinCamera'
 import ProductCamera from '@/components/patient/ProductCamera'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Leaf, ChevronRight, Check, Loader2, ScanLine, X } from 'lucide-react'
+import { Leaf, ChevronRight, ChevronLeft, Check, Loader2, ScanLine, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -43,25 +43,31 @@ const GOALS: { value: RoutineGoal; label: string; emoji: string }[] = [
 ]
 
 const PHOTO_ANGLES: PhotoAngle[] = ['front', 'left-side', 'right-side']
+const ANGLE_LABELS: Record<PhotoAngle, string> = {
+  'front': 'Front',
+  'left-side': 'Left',
+  'right-side': 'Right',
+}
 
-type Step = 'name' | 'skin-type' | 'concerns' | 'goals' | 'products' | 'photos' | 'welcome'
-const STEPS: Step[] = ['name', 'skin-type', 'concerns', 'goals', 'products', 'photos', 'welcome']
+type Step = 'name' | 'skin-type' | 'concerns' | 'goals' | 'products' | 'photos' | 'photo-review' | 'welcome'
+const STEPS: Step[] = ['name', 'skin-type', 'concerns', 'goals', 'products', 'photos', 'photo-review', 'welcome']
 
 const variants = {
-  enter: { opacity: 0, x: 30 },
+  enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 30 : -30 }),
   center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -30 },
+  exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -30 : 30 }),
 }
 
 export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>('name')
+  const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
   const [userName, setUserName] = useState('')
   const [skinType, setSkinType] = useState<SkinType | null>(null)
   const [concerns, setConcerns] = useState<SkinConcern[]>([])
   const [goals, setGoals] = useState<RoutineGoal[]>([])
   const [products, setProducts] = useState<RoutineProduct[]>([])
-  const [photosCaptured, setPhotosCaptured] = useState(false)
+  const [capturedPhotos, setCapturedPhotos] = useState<Record<PhotoAngle, string> | null>(null)
 
   // Product search state
   const [productQuery, setProductQuery] = useState('')
@@ -77,8 +83,15 @@ export default function OnboardingPage() {
   }
 
   function next() {
+    setDirection(1)
     const idx = STEPS.indexOf(step)
     if (idx < STEPS.length - 1) setStep(STEPS[idx + 1])
+  }
+
+  function prev() {
+    setDirection(-1)
+    const idx = STEPS.indexOf(step)
+    if (idx > 0) setStep(STEPS[idx - 1])
   }
 
   async function handleProductSearch() {
@@ -92,9 +105,10 @@ export default function OnboardingPage() {
         body: JSON.stringify({ query: productQuery }),
       })
       const data = await res.json()
+      if (data.error) throw new Error(data.error)
       setFoundProduct(data)
-    } catch {
-      toast.error('Could not find product — try a different name')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not find product — try again')
     } finally {
       setIsSearching(false)
     }
@@ -137,9 +151,10 @@ export default function OnboardingPage() {
         dataUrl,
       })),
     })
-    setPhotosCaptured(true)
-    toast.success('Baseline photos saved 🌿')
-    setStep('welcome')
+    setCapturedPhotos(photos)
+    toast.success('Photos saved 🌿')
+    setDirection(1)
+    setStep('photo-review')
   }
 
   function handleComplete() {
@@ -156,30 +171,38 @@ export default function OnboardingPage() {
   }
 
   const stepIndex = STEPS.indexOf(step)
+  const showBack = step !== 'name' && step !== 'welcome' && step !== 'photos' && step !== 'photo-review'
+  // Hide back on photos/photo-review since SkinCamera has its own skip control
+  // photo-review has its own retake button
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center px-6 py-12">
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-10">
+      <div className="flex items-center gap-2 mb-8">
         <Leaf className="text-[#7C6B5A]" size={22} />
         <span className="text-lg font-semibold tracking-wide text-stone-800">hazel</span>
       </div>
 
-      {/* Progress dots */}
-      <div className="flex gap-2 mb-10">
-        {STEPS.map((s, i) => (
-          <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${
-            i === stepIndex ? 'w-6 bg-[#7C6B5A]' :
-            i < stepIndex  ? 'w-4 bg-[#C4B5A5]' : 'w-1.5 bg-stone-300'
-          }`} />
-        ))}
-      </div>
+      {/* Progress dots — hide on photos/photo-review to avoid clutter */}
+      {step !== 'photos' && (
+        <div className="flex gap-2 mb-8">
+          {STEPS.filter(s => s !== 'photo-review').map((s, i) => {
+            const adjustedIndex = stepIndex > STEPS.indexOf('photo-review') ? stepIndex - 1 : stepIndex
+            return (
+              <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === adjustedIndex ? 'w-6 bg-[#7C6B5A]' :
+                i < adjustedIndex  ? 'w-4 bg-[#C4B5A5]' : 'w-1.5 bg-stone-300'
+              }`} />
+            )
+          })}
+        </div>
+      )}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" custom={direction}>
 
         {/* Name */}
         {step === 'name' && (
-          <motion.div key="name" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="name" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Welcome to Hazel</h1>
@@ -202,8 +225,13 @@ export default function OnboardingPage() {
 
         {/* Skin type */}
         {step === 'skin-type' && (
-          <motion.div key="skin-type" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="skin-type" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
+            {showBack && (
+              <button onClick={prev} className="flex items-center gap-1 text-sm text-stone-400 hover:text-stone-600 self-start -mb-2">
+                <ChevronLeft size={16} /> Back
+              </button>
+            )}
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your skin type</h1>
               <p className="text-stone-500 text-sm">This helps Hazel tailor your routine.</p>
@@ -233,8 +261,13 @@ export default function OnboardingPage() {
 
         {/* Concerns */}
         {step === 'concerns' && (
-          <motion.div key="concerns" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="concerns" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
+            {showBack && (
+              <button onClick={prev} className="flex items-center gap-1 text-sm text-stone-400 hover:text-stone-600 self-start -mb-2">
+                <ChevronLeft size={16} /> Back
+              </button>
+            )}
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Skin concerns</h1>
               <p className="text-stone-500 text-sm">Select all that apply.</p>
@@ -260,8 +293,13 @@ export default function OnboardingPage() {
 
         {/* Goals */}
         {step === 'goals' && (
-          <motion.div key="goals" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="goals" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
+            {showBack && (
+              <button onClick={prev} className="flex items-center gap-1 text-sm text-stone-400 hover:text-stone-600 self-start -mb-2">
+                <ChevronLeft size={16} /> Back
+              </button>
+            )}
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your goals</h1>
               <p className="text-stone-500 text-sm">What do you want to achieve?</p>
@@ -287,8 +325,13 @@ export default function OnboardingPage() {
 
         {/* Products */}
         {step === 'products' && !showCamera && (
-          <motion.div key="products" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="products" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-5">
+            {showBack && (
+              <button onClick={prev} className="flex items-center gap-1 text-sm text-stone-400 hover:text-stone-600 self-start -mb-1">
+                <ChevronLeft size={16} /> Back
+              </button>
+            )}
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your products</h1>
               <p className="text-stone-500 text-sm">
@@ -303,7 +346,7 @@ export default function OnboardingPage() {
                 <Input
                   placeholder="e.g. CeraVe Moisturiser, Niacinamide..."
                   value={productQuery}
-                  onChange={e => setProductQuery(e.target.value)}
+                  onChange={e => { setProductQuery(e.target.value); setFoundProduct(null) }}
                   onKeyDown={e => e.key === 'Enter' && handleProductSearch()}
                   className="border-stone-200 h-10 text-sm"
                 />
@@ -364,7 +407,9 @@ export default function OnboardingPage() {
             <div className="flex flex-col gap-2 pt-1">
               <Button onClick={next}
                 className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
-                {products.length > 0 ? `Continue with ${products.length} product${products.length > 1 ? 's' : ''}` : 'Continue'} <ChevronRight size={16} className="ml-1" />
+                {products.length > 0
+                  ? `Continue with ${products.length} product${products.length > 1 ? 's' : ''}`
+                  : 'Continue'} <ChevronRight size={16} className="ml-1" />
               </Button>
               {products.length === 0 && (
                 <button onClick={next} className="text-sm text-stone-400 hover:text-stone-600 py-1">
@@ -377,7 +422,7 @@ export default function OnboardingPage() {
 
         {/* Product camera */}
         {step === 'products' && showCamera && (
-          <motion.div key="camera" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="camera" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-semibold text-stone-800">Scan product</h1>
@@ -395,26 +440,67 @@ export default function OnboardingPage() {
 
         {/* Photos */}
         {step === 'photos' && (
-          <motion.div key="photos" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="photos" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-4">
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Baseline photos</h1>
               <p className="text-stone-500 text-sm">
-                Front, left, and right — so you can see your skin change over time.
-                These stay on your device only.
+                Front, left, and right — so you can see your skin change over time. These stay on your device only.
               </p>
             </div>
             <SkinCamera
               angles={PHOTO_ANGLES}
               onComplete={handlePhotosComplete}
-              onSkip={() => setStep('welcome')}
+              onSkip={() => { setDirection(1); setStep('welcome') }}
             />
+          </motion.div>
+        )}
+
+        {/* Photo review */}
+        {step === 'photo-review' && capturedPhotos && (
+          <motion.div key="photo-review" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-stone-800 mb-1">Looking good 🌿</h1>
+              <p className="text-stone-500 text-sm">
+                Your baseline photos are saved. Hazel will compare against these over time.
+              </p>
+            </div>
+
+            {/* Photo thumbnails */}
+            <div className="grid grid-cols-3 gap-3">
+              {PHOTO_ANGLES.map(angle => (
+                <div key={angle} className="flex flex-col items-center gap-1.5">
+                  <div className="w-full aspect-square rounded-2xl overflow-hidden border-2 border-[#7C6B5A] bg-stone-100">
+                    <img
+                      src={capturedPhotos[angle]}
+                      alt={`${angle} view`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs text-stone-500 font-medium">{ANGLE_LABELS[angle]}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Button onClick={next}
+                className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+                Continue <ChevronRight size={16} className="ml-1" />
+              </Button>
+              <button
+                onClick={() => { setDirection(-1); setStep('photos') }}
+                className="text-sm text-stone-400 hover:text-stone-600 py-1"
+              >
+                Retake photos
+              </button>
+            </div>
           </motion.div>
         )}
 
         {/* Welcome */}
         {step === 'welcome' && (
-          <motion.div key="welcome" variants={variants} initial="enter" animate="center" exit="exit"
+          <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col items-center gap-6 text-center">
             <div className="w-16 h-16 rounded-full bg-[#F5F0EB] flex items-center justify-center">
               <Leaf className="text-[#7C6B5A]" size={28} />
@@ -425,7 +511,7 @@ export default function OnboardingPage() {
               </h1>
               <p className="text-stone-500 text-sm leading-relaxed">
                 Hazel will help you track your skin, understand your patterns, and feel more at ease — one day at a time.
-                {photosCaptured && ' Your baseline photos are saved.'}
+                {capturedPhotos && ' Your baseline photos are saved.'}
                 {products.length > 0 && ` ${products.length} product${products.length > 1 ? 's' : ''} added to your library.`}
               </p>
             </div>

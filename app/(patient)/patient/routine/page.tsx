@@ -111,9 +111,10 @@ export default function RoutinePage() {
         body: JSON.stringify({ query: productSearch }),
       })
       const data = await res.json()
+      if (data.error) throw new Error(data.error)
       setFoundProduct(data)
-    } catch {
-      toast.error('Could not look up product')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not look up product')
     } finally {
       setIsLooking(false)
     }
