@@ -10,7 +10,7 @@ import SkinCamera from '@/components/patient/SkinCamera'
 import ProductCamera from '@/components/patient/ProductCamera'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Leaf, ChevronRight, ChevronLeft, Check, Loader2, ScanLine, X } from 'lucide-react'
+import { Leaf, ChevronRight, ChevronLeft, Check, Loader2, ScanLine, X, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -69,6 +69,17 @@ export default function OnboardingPage() {
   const [goals, setGoals] = useState<RoutineGoal[]>([])
   const [products, setProducts] = useState<RoutineProduct[]>([])
   const [capturedPhotos, setCapturedPhotos] = useState<Record<PhotoAngle, string> | null>(null)
+
+  // Photo analysis state
+  type PhotoAnalysis = {
+    summary: string
+    observations: string[]
+    overallCondition: 'clear' | 'mild' | 'moderate' | 'significant'
+    notableFindings: string[]
+    confidence: 'high' | 'medium' | 'low'
+  }
+  const [photoAnalysis, setPhotoAnalysis] = useState<PhotoAnalysis | null>(null)
+  const [isAnalysing, setIsAnalysing] = useState(false)
 
   // Product search state
   const [productQuery, setProductQuery] = useState('')
@@ -153,7 +164,7 @@ export default function OnboardingPage() {
     setProducts(prev => prev.filter(p => p.id !== id))
   }
 
-  function handlePhotosComplete(photos: Record<PhotoAngle, string>) {
+  async function handlePhotosComplete(photos: Record<PhotoAngle, string>) {
     const today = new Date().toISOString().split('T')[0]
     savePhotoSet({
       date: today,
@@ -166,6 +177,34 @@ export default function OnboardingPage() {
     toast.success('Photos saved 🌿')
     setDirection(1)
     setStep('photo-review')
+
+    // Analyse front photo in background
+    setIsAnalysing(true)
+    setPhotoAnalysis(null)
+    try {
+      const frontDataUrl = photos['front']
+      // Strip data URL prefix to get raw base64
+      const base64 = frontDataUrl.split(',')[1]
+      const res = await fetch('/api/patient/photo-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'single',
+          frontPhoto: base64,
+          context: {
+            skinType: skinTypes.length ? skinTypes.join(', ') : undefined,
+            concerns: concerns.length ? concerns : undefined,
+          },
+        }),
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setPhotoAnalysis(data)
+    } catch {
+      // Silent — analysis is best-effort during onboarding
+    } finally {
+      setIsAnalysing(false)
+    }
   }
 
   function handleComplete() {
@@ -476,9 +515,9 @@ export default function OnboardingPage() {
           <motion.div key="photo-review" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col gap-6">
             <div>
-              <h1 className="text-2xl font-semibold text-stone-800 mb-1">Looking good 🌿</h1>
+              <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your baseline photos</h1>
               <p className="text-stone-500 text-sm">
-                Your baseline photos are saved. Hazel will compare against these over time.
+                Saved to your device. Hazel will track changes over time.
               </p>
             </div>
 
@@ -498,10 +537,79 @@ export default function OnboardingPage() {
               ))}
             </div>
 
+            {/* AI analysis card */}
+            <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-stone-100 bg-[#F8EDE6]">
+                <Sparkles size={14} className="text-[#C17A5A]" />
+                <span className="text-xs font-semibold text-[#C17A5A] uppercase tracking-wide">Hazel's first look</span>
+              </div>
+
+              {isAnalysing && (
+                <div className="flex items-center gap-3 px-4 py-5">
+                  <Loader2 size={16} className="animate-spin text-[#C17A5A] shrink-0" />
+                  <p className="text-sm text-stone-500">Reading your skin…</p>
+                </div>
+              )}
+
+              {!isAnalysing && photoAnalysis && (
+                <div className="px-4 py-4 flex flex-col gap-3">
+                  {/* Overall condition badge */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                      photoAnalysis.overallCondition === 'clear'    ? 'bg-emerald-50 text-emerald-700' :
+                      photoAnalysis.overallCondition === 'mild'     ? 'bg-amber-50 text-amber-700' :
+                      photoAnalysis.overallCondition === 'moderate' ? 'bg-orange-50 text-orange-700' :
+                                                                       'bg-rose-50 text-rose-700'
+                    }`}>
+                      {photoAnalysis.overallCondition.charAt(0).toUpperCase() + photoAnalysis.overallCondition.slice(1)} skin
+                    </span>
+                    {photoAnalysis.confidence === 'low' && (
+                      <span className="text-xs text-stone-400">Low confidence — photo quality</span>
+                    )}
+                  </div>
+
+                  {/* Summary */}
+                  <p className="text-sm text-stone-700 leading-relaxed">{photoAnalysis.summary}</p>
+
+                  {/* Observations */}
+                  {photoAnalysis.observations.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      {photoAnalysis.observations.map((obs, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <div className="w-1 h-1 rounded-full bg-[#C17A5A] mt-1.5 shrink-0" />
+                          <p className="text-xs text-stone-500">{obs}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Notable findings */}
+                  {photoAnalysis.notableFindings.length > 0 && (
+                    <div className="bg-amber-50 rounded-xl p-3 flex flex-col gap-1">
+                      <p className="text-xs font-semibold text-amber-700">Worth mentioning to a dermatologist</p>
+                      {photoAnalysis.notableFindings.map((f, i) => (
+                        <p key={i} className="text-xs text-amber-600">{f}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!isAnalysing && !photoAnalysis && (
+                <div className="px-4 py-4">
+                  <p className="text-sm text-stone-400">Analysis unavailable — you can always view your skin report later.</p>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col gap-2">
-              <Button onClick={next}
-                className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
-                Continue <ChevronRight size={16} className="ml-1" />
+              <Button onClick={next} disabled={isAnalysing}
+                className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl disabled:opacity-60">
+                {isAnalysing ? (
+                  <><Loader2 size={15} className="animate-spin mr-2" /> Analysing…</>
+                ) : (
+                  <>Continue <ChevronRight size={16} className="ml-1" /></>
+                )}
               </Button>
               <button
                 onClick={() => { setDirection(-1); setStep('photos') }}
