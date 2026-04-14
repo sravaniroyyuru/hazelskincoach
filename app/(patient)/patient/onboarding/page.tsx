@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid'
 const SKIN_TYPES: { value: SkinType; label: string; description: string }[] = [
   { value: 'oily',        label: 'Oily',         description: 'Shiny, enlarged pores' },
   { value: 'dry',         label: 'Dry',          description: 'Tight, flaky, dull' },
+  { value: 'dehydrated',  label: 'Dehydrated',   description: 'Lacks water, feels tight' },
   { value: 'combination', label: 'Combination',  description: 'Oily T-zone, dry cheeks' },
   { value: 'normal',      label: 'Normal',       description: 'Balanced, few concerns' },
   { value: 'sensitive',   label: 'Sensitive',    description: 'Reacts easily, prone to redness' },
@@ -63,7 +64,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>('name')
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = backward
   const [userName, setUserName] = useState('')
-  const [skinType, setSkinType] = useState<SkinType | null>(null)
+  const [skinTypes, setSkinTypes] = useState<SkinType[]>([])
   const [concerns, setConcerns] = useState<SkinConcern[]>([])
   const [goals, setGoals] = useState<RoutineGoal[]>([])
   const [products, setProducts] = useState<RoutineProduct[]>([])
@@ -75,6 +76,9 @@ export default function OnboardingPage() {
   const [foundProduct, setFoundProduct] = useState<Partial<RoutineProduct> | null>(null)
   const [showCamera, setShowCamera] = useState(false)
 
+  function toggleSkinType(t: SkinType) {
+    setSkinTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
+  }
   function toggleConcern(c: SkinConcern) {
     setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
   }
@@ -161,7 +165,7 @@ export default function OnboardingPage() {
     saveSnapshot({
       userName,
       onboarded: true,
-      skinType,
+      skinType: skinTypes,
       concerns,
       goals,
       products,
@@ -234,13 +238,13 @@ export default function OnboardingPage() {
             )}
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-1">Your skin type</h1>
-              <p className="text-stone-500 text-sm">This helps Hazel tailor your routine.</p>
+              <p className="text-stone-500 text-sm">Select all that describe your skin.</p>
             </div>
             <div className="flex flex-col gap-3">
               {SKIN_TYPES.map(({ value, label, description }) => (
-                <button key={value} onClick={() => setSkinType(value)}
+                <button key={value} onClick={() => toggleSkinType(value)}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left transition-colors ${
-                    skinType === value
+                    skinTypes.includes(value)
                       ? 'border-[#7C6B5A] bg-[#F5F0EB]'
                       : 'border-stone-200 bg-white hover:border-stone-300'
                   }`}>
@@ -248,11 +252,11 @@ export default function OnboardingPage() {
                     <div className="font-medium text-stone-800">{label}</div>
                     <div className="text-xs text-stone-500 mt-0.5">{description}</div>
                   </div>
-                  {skinType === value && <Check size={16} className="text-[#7C6B5A]" />}
+                  {skinTypes.includes(value) && <Check size={16} className="text-[#7C6B5A]" />}
                 </button>
               ))}
             </div>
-            <Button onClick={next} disabled={!skinType}
+            <Button onClick={next} disabled={skinTypes.length === 0}
               className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
               Continue <ChevronRight size={16} className="ml-1" />
             </Button>

@@ -1,4 +1,4 @@
-export type SkinType = 'oily' | 'dry' | 'combination' | 'normal' | 'sensitive'
+export type SkinType = 'oily' | 'dry' | 'combination' | 'normal' | 'sensitive' | 'dehydrated'
 
 export type SkinConcern =
   | 'acne'
@@ -67,7 +67,7 @@ export type PhotoSet = {
 export type PatientSnapshot = {
   userName: string
   onboarded: boolean
-  skinType: SkinType | null
+  skinType: SkinType[]
   concerns: SkinConcern[]
   goals: RoutineGoal[]
   products: RoutineProduct[]

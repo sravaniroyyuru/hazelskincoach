@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 This is not just a skincare app. Skin is deeply personal. It affects how people feel walking into a room, whether they cancel plans, how they feel about themselves in photos. You understand that. You hold space for that.
 
 ${context?.userName ? `The user's name is ${context.userName}.` : ''}
-${context?.skinType ? `Their skin type is ${context.skinType}.` : ''}
+${context?.skinType?.length ? `Their skin type is ${Array.isArray(context.skinType) ? context.skinType.join(' + ') : context.skinType}.` : ''}
 ${context?.concerns?.length ? `Their main skin concerns are: ${context.concerns.join(', ')}.` : ''}
 ${context?.goals?.length ? `Their goals are: ${context.goals.join(', ')}.` : ''}
 ${context?.routineSteps?.length ? `Their current routine has ${context.routineSteps.length} step(s).` : "They haven't built a routine yet."}

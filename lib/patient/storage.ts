@@ -24,7 +24,7 @@ const COMPARISON_PREFIX = 'hazel-comparison-'
 const DEFAULT_SNAPSHOT: PatientSnapshot = {
   userName: '',
   onboarded: false,
-  skinType: null,
+  skinType: [],
   concerns: [],
   goals: [],
   products: [],

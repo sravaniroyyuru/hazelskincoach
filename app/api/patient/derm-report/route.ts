@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
 Patient profile:
 - Name: ${snapshot?.userName ?? 'Patient'}
-- Skin type: ${snapshot?.skinType ?? 'Unknown'}
+- Skin type: ${snapshot?.skinType?.length ? snapshot.skinType.join(', ') : 'Unknown'}
 - Concerns: ${snapshot?.concerns?.join(', ') ?? 'None listed'}
 - Goals: ${snapshot?.goals?.join(', ') ?? 'None listed'}
 
