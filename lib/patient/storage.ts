@@ -18,6 +18,8 @@ const ANALYSES_KEY  = 'hazel-skin-analyses'
 const NUDGES_KEY    = 'hazel-dismissed-nudges'
 const REPORT_NUDGE_KEY = 'hazel-report-nudge'
 const COMPARISON_PREFIX = 'hazel-comparison-'
+const ROUTINE_COMPLETIONS_KEY = 'hazel-routine-completions'
+const DAILY_BRIEF_PREFIX = 'hazel-daily-brief-'
 
 // ── Snapshot (profile + routine) ──────────────────────────────────────────────
 
@@ -240,6 +242,65 @@ export function getComparisonCache(dateA: string, dateB: string): string | null 
 
 export function saveComparisonCache(dateA: string, dateB: string, summary: string) {
   localStorage.setItem(`${COMPARISON_PREFIX}${dateA}-${dateB}`, summary)
+}
+
+// ── Routine completions (daily checklist persistence) ────────────────────────
+
+type RoutineCompletions = {
+  am: Record<string, boolean>
+  pm: Record<string, boolean>
+}
+
+export function getRoutineCompletions(date: string): RoutineCompletions {
+  if (typeof window === 'undefined') return { am: {}, pm: {} }
+  try {
+    const raw = localStorage.getItem(ROUTINE_COMPLETIONS_KEY)
+    const all: Record<string, RoutineCompletions> = raw ? JSON.parse(raw) : {}
+    return all[date] ?? { am: {}, pm: {} }
+  } catch {
+    return { am: {}, pm: {} }
+  }
+}
+
+export function saveRoutineCompletion(
+  date: string,
+  period: 'am' | 'pm',
+  stepId: string,
+  checked: boolean
+) {
+  if (typeof window === 'undefined') return
+  try {
+    const raw = localStorage.getItem(ROUTINE_COMPLETIONS_KEY)
+    const all: Record<string, RoutineCompletions> = raw ? JSON.parse(raw) : {}
+    if (!all[date]) all[date] = { am: {}, pm: {} }
+    all[date][period][stepId] = checked
+    // Keep only last 14 days to avoid bloat
+    const keys = Object.keys(all).sort().slice(-14)
+    const pruned: Record<string, RoutineCompletions> = {}
+    keys.forEach(k => { pruned[k] = all[k] })
+    localStorage.setItem(ROUTINE_COMPLETIONS_KEY, JSON.stringify(pruned))
+  } catch {
+    // silent
+  }
+}
+
+// ── Daily brief cache ─────────────────────────────────────────────────────────
+
+type DailyBrief = { brief: string; focusTip: string }
+
+export function getDailyBrief(date: string): DailyBrief | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(`${DAILY_BRIEF_PREFIX}${date}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function saveDailyBrief(date: string, data: DailyBrief) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(`${DAILY_BRIEF_PREFIX}${date}`, JSON.stringify(data))
 }
 
 // ── Streak helpers ────────────────────────────────────────────────────────────

@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react'
 import { getRecentCheckins, getRoutineStreak, getSnapshot, getPhotoSets } from '@/lib/patient/storage'
 import type { CheckInRecord, PhotoSet } from '@/types/patient'
 import { motion } from 'framer-motion'
-import { Flame, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react'
+import { Flame, TrendingUp, TrendingDown, Minus, Calendar, MessageCircle, Leaf } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import PhotoComparison from '@/components/patient/PhotoComparison'
+import Link from 'next/link'
 
 const SKIN_FEEL_SCORE: Record<string, number> = { great: 4, good: 3, meh: 2, bad: 1 }
 const BREAKOUT_SCORE: Record<string, number> = { none: 4, minor: 3, moderate: 2, bad: 1 }
@@ -82,15 +84,44 @@ export default function ProgressPage() {
       ).sort((a, b) => b[1] - a[1])[0]?.[0]
     : null
 
+  const narrative = (() => {
+    if (!last7.length) return 'Start checking in to see your story.'
+    if (trend === 'improving' && streak >= 7) return `${streak} days strong — your skin is responding.`
+    if (trend === 'improving' && streak >= 3) return `${streak} days in a row. Things are moving in the right direction.`
+    if (trend === 'improving') return 'Things are moving in the right direction this week.'
+    if (trend === 'declining' && last7[0]?.routine === 'skipped') return 'A few skipped days — your skin noticed. No judgment.'
+    if (trend === 'declining') return "This week has been harder. Let's look at what shifted."
+    if (routineAdherence === 100) return 'Perfect routine week. Your future skin will thank you.'
+    if (routineAdherence !== null) return `${routineAdherence}% routine adherence. Consistency over perfection.`
+    return 'Your last 7 days at a glance.'
+  })()
+
+  const trendLabel =
+    trend === 'improving' ? 'Your skin is improving this week 📈' :
+    trend === 'declining' ? 'Your skin has had a harder week' :
+    'Your skin has been stable this week'
+
   return (
     <div className="px-5 pt-8 pb-4">
       <h1 className="text-xl font-semibold text-stone-800 mb-1">Progress</h1>
-      <p className="text-stone-500 text-sm mb-6">Your last 7 days at a glance.</p>
+      <p className="text-stone-600 text-sm font-medium mb-6">{narrative}</p>
 
       {checkins.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 text-center border border-stone-100">
-          <p className="text-stone-400 text-sm">No check-ins yet.</p>
-          <p className="text-stone-400 text-xs mt-1">Complete your daily check-in to start tracking progress.</p>
+        <div className="bg-white rounded-2xl p-8 text-center border border-stone-100 flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-[#F8EDE6] flex items-center justify-center">
+            <Leaf size={24} className="text-[#C17A5A]" />
+          </div>
+          <div>
+            <p className="text-stone-700 font-medium mb-1">Your story starts today</p>
+            <p className="text-stone-400 text-sm leading-relaxed">
+              Complete your first check-in and Hazel will start tracking your skin patterns.
+            </p>
+          </div>
+          <Link href="/patient/today">
+            <Button className="bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl">
+              Do today's check-in
+            </Button>
+          </Link>
         </div>
       ) : (
         <>
@@ -181,6 +212,19 @@ export default function ProgressPage() {
               <p className="text-xs text-stone-400">days no picking</p>
             </div>
           </div>
+
+          {/* Coach nudge */}
+          {trend && (
+            <Link href="/patient/coach?prompt=trend" className="block mb-4">
+              <div className="bg-[#F8EDE6] rounded-2xl p-4 border border-[#EDD5C8] flex items-center justify-between hover:border-[#C17A5A] transition-colors">
+                <div>
+                  <p className="text-sm font-medium text-stone-700">{trendLabel}</p>
+                  <p className="text-xs text-stone-500 mt-0.5">Ask Hazel what's driving it →</p>
+                </div>
+                <MessageCircle size={18} className="text-[#C17A5A] shrink-0 ml-3" />
+              </div>
+            </Link>
+          )}
 
           {/* Photo comparison */}
           {photoSets.length >= 1 && (

@@ -161,7 +161,7 @@ export default function RoutinePage() {
   const amSteps = steps.filter(s => s.timeOfDay === 'am').sort((a, b) => a.sortOrder - b.sortOrder)
   const pmSteps = steps.filter(s => s.timeOfDay === 'pm').sort((a, b) => a.sortOrder - b.sortOrder)
 
-  function StepList({ items, time }: { items: RoutineStep[]; time: 'am' | 'pm' }) {
+  function StepList({ items, time, onAdd }: { items: RoutineStep[]; time: 'am' | 'pm'; onAdd: () => void }) {
     return (
       <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-stone-100">
         <div className="flex items-center justify-between mb-4">
@@ -172,12 +172,18 @@ export default function RoutinePage() {
             </h2>
           </div>
           <Button variant="ghost" size="sm" className="text-[#C17A5A] h-7 px-2 rounded-lg"
-            onClick={() => openAdd(time)}>
+            onClick={onAdd}>
             <Plus size={14} className="mr-1" /> Add step
           </Button>
         </div>
         {items.length === 0 ? (
-          <p className="text-stone-400 text-sm text-center py-4">No steps yet</p>
+          <div className="text-center py-4 flex flex-col items-center gap-2">
+            <div className="text-2xl">{time === 'am' ? '☀️' : '🌙'}</div>
+            <p className="text-stone-400 text-sm">No {time === 'am' ? 'morning' : 'evening'} steps yet.</p>
+            <button onClick={onAdd} className="text-xs text-[#C17A5A] font-medium hover:underline underline-offset-2">
+              Add your first step →
+            </button>
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
             {items.map(step => (
@@ -222,8 +228,8 @@ export default function RoutinePage() {
       <h1 className="text-xl font-semibold text-stone-800 mb-1">My routine</h1>
       <p className="text-stone-500 text-sm mb-6">Build your AM & PM skincare steps.</p>
 
-      <StepList items={amSteps} time="am" />
-      <StepList items={pmSteps} time="pm" />
+      <StepList items={amSteps} time="am" onAdd={() => openAdd('am')} />
+      <StepList items={pmSteps} time="pm" onAdd={() => openAdd('pm')} />
 
       {/* Products library */}
       {products.length > 0 && (

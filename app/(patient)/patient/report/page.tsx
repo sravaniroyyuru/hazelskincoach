@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Loader2, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { FileText, Loader2, ChevronDown, ChevronUp, Sparkles, Copy, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Report = {
@@ -148,11 +148,50 @@ export default function ReportPage() {
       <AnimatePresence>
         {report && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
-            {/* Regenerate button */}
-            <Button variant="outline" size="sm" onClick={() => setReport(null)}
-              className="self-start rounded-xl border-[#C17A5A] text-[#C17A5A] mb-1">
-              ← Edit & regenerate
-            </Button>
+            {/* Action row */}
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => setReport(null)}
+                className="rounded-xl border-[#C17A5A] text-[#C17A5A]">
+                ← Edit & regenerate
+              </Button>
+              <Button variant="outline" size="sm"
+                className="rounded-xl border-stone-200 text-stone-600 gap-1.5"
+                onClick={async () => {
+                  if (!report) return
+                  const text = [
+                    `HAZEL SKIN REPORT\n`,
+                    ...REPORT_SECTIONS.map(s => `${s.title.toUpperCase()}\n${report[s.key]}`),
+                    `QUESTIONS FOR YOUR DERMATOLOGIST\n${report.questionsForDerm.map((q, i) => `${i + 1}. ${q}`).join('\n')}`,
+                  ].join('\n\n')
+                  try {
+                    await navigator.clipboard.writeText(text)
+                    toast.success('Copied — paste into an email or notes 🌿')
+                  } catch {
+                    toast.error('Could not copy — try selecting the text manually')
+                  }
+                }}>
+                <Copy size={13} /> Copy
+              </Button>
+              {typeof navigator !== 'undefined' && 'share' in navigator && (
+                <Button variant="outline" size="sm"
+                  className="rounded-xl border-stone-200 text-stone-600 gap-1.5"
+                  onClick={async () => {
+                    if (!report) return
+                    const text = [
+                      `HAZEL SKIN REPORT\n`,
+                      ...REPORT_SECTIONS.map(s => `${s.title.toUpperCase()}\n${report[s.key]}`),
+                      `QUESTIONS FOR YOUR DERMATOLOGIST\n${report.questionsForDerm.map((q, i) => `${i + 1}. ${q}`).join('\n')}`,
+                    ].join('\n\n')
+                    try {
+                      await navigator.share({ title: 'My skin report — Hazel', text })
+                    } catch {
+                      toast('Sharing cancelled')
+                    }
+                  }}>
+                  <Share2 size={13} /> Share
+                </Button>
+              )}
+            </div>
 
             {/* Report sections */}
             {REPORT_SECTIONS.map(({ key, title }) => (

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getSnapshot } from '@/lib/patient/storage'
 import type { PatientSnapshot, CoachMessage } from '@/types/patient'
 import { Button } from '@/components/ui/button'
@@ -12,23 +13,42 @@ import { motion } from 'framer-motion'
 
 const ASSESSMENT_PROMPT = "I'd like a personalised skin assessment. Based on what you know about me, and a few questions, give me a thorough understanding of my skin."
 
-const STARTERS = [
-  { text: 'Today I felt really anxious about my skin', emoji: '💭' },
-  { text: "I've been cancelling plans because of my skin", emoji: '😔' },
-  { text: "I'm frustrated — nothing seems to be working", emoji: '😤' },
-  { text: 'What should I know about my skin type?', emoji: '🌿' },
-  { text: "Help me understand what's in my routine", emoji: '🧴' },
-]
+function getPersonalisedStarters(snap: PatientSnapshot | null) {
+  const concerns = snap?.concerns ?? []
+  const base = [
+    { text: "Today I felt really anxious about my skin", emoji: '💭' },
+    { text: "I've been cancelling plans because of my skin", emoji: '😔' },
+    { text: "I'm frustrated — nothing seems to be working", emoji: '😤' },
+    { text: "I'm not sure my routine is actually working", emoji: '🧴' },
+    { text: "I want to feel better in my skin", emoji: '🌿' },
+  ]
+  // Swap in concern-specific starter at position 3
+  if (concerns.includes('acne')) {
+    base[3] = { text: "Why do I keep breaking out in the same spots?", emoji: '🔴' }
+  } else if (concerns.includes('anti-ageing')) {
+    base[3] = { text: "Which ingredients in my routine actually work?", emoji: '⏳' }
+  } else if (concerns.includes('pigmentation')) {
+    base[3] = { text: "Will my dark spots ever fade?", emoji: '🟤' }
+  } else if (concerns.includes('redness')) {
+    base[3] = { text: "How do I calm my skin when it flares up?", emoji: '🌸' }
+  }
+  return base
+}
 
-export default function CoachPage() {
+// ── Inner component (needs useSearchParams → must be inside Suspense) ─────────
+
+function CoachPageInner() {
+  const searchParams = useSearchParams()
   const [snap, setSnap] = useState<PatientSnapshot | null>(null)
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const seededRef = useRef(false)
 
   useEffect(() => {
-    setSnap(getSnapshot())
+    const s = getSnapshot()
+    setSnap(s)
   }, [])
 
   useEffect(() => {
@@ -44,23 +64,23 @@ export default function CoachPage() {
     setInput('')
     setIsLoading(true)
 
-    // Placeholder for streaming assistant response
     const assistantMsg: CoachMessage = { role: 'assistant', content: '' }
     setMessages([...updated, assistantMsg])
 
     try {
+      const s = getSnapshot()
       const res = await fetch('/api/patient/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: updated,
-          context: snap
+          context: s
             ? {
-                userName: snap.userName,
-                skinType: snap.skinType,
-                concerns: snap.concerns,
-                goals: snap.goals,
-                routineSteps: snap.routineSteps,
+                userName: s.userName,
+                skinType: s.skinType,
+                concerns: s.concerns,
+                goals: s.goals,
+                routineSteps: s.routineSteps,
               }
             : {},
         }),
@@ -99,12 +119,36 @@ export default function CoachPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [messages, isLoading, snap])
+  }, [messages, isLoading])
+
+  // Seed conversation from URL param (bad-day or trend)
+  useEffect(() => {
+    if (seededRef.current || isLoading) return
+    const prompt = searchParams.get('prompt')
+    if (prompt === 'bad-day') {
+      seededRef.current = true
+      setTimeout(() => {
+        sendMessage("I had a rough skin day today — can you help me understand what might be going on and what I can do?")
+      }, 400)
+    } else if (prompt === 'trend') {
+      seededRef.current = true
+      setTimeout(() => {
+        sendMessage("Can you help me understand my skin trends from the past week? I want to know what's driving them.")
+      }, 400)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     sendMessage(input)
   }
+
+  // Personalised empty state
+  const firstName = snap?.userName?.split(' ')[0]
+  const topConcern = snap?.concerns?.[0]?.replace(/-/g, ' ')
+  const skinTypesText = snap?.skinType?.length ? snap.skinType.join(', ') : null
+  const starters = getPersonalisedStarters(snap)
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -116,7 +160,7 @@ export default function CoachPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-stone-800">Hazel</p>
-            <p className="text-xs text-stone-400">Here for you — skin, feelings, all of it</p>
+            <p className="text-xs text-stone-400">Your skin confidante. Ask anything.</p>
           </div>
         </div>
       </div>
@@ -125,14 +169,20 @@ export default function CoachPage() {
       <ScrollArea className="flex-1 px-5 py-4">
         {messages.length === 0 ? (
           <div className="flex flex-col gap-4 py-6">
-            {/* Header */}
+            {/* Personalised header */}
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-[#F8EDE6] flex items-center justify-center mx-auto mb-3">
                 <Leaf size={20} className="text-[#C17A5A]" />
               </div>
-              <p className="text-stone-700 font-medium">This is your space</p>
+              <p className="text-stone-700 font-medium">
+                {firstName ? `Hi ${firstName}` : 'Hi there'}
+                {topConcern ? ` — I know you're working on ${topConcern}.` : '.'}
+              </p>
               <p className="text-stone-400 text-sm mt-1 leading-relaxed">
-                Talk about how your skin is making you feel, or ask anything. Hazel is here for both.
+                {skinTypesText
+                  ? `Ask me anything — about your ${skinTypesText} skin, your routine, or how today feels.`
+                  : 'Ask me anything about your skin, routine, or how today feels.'
+                }
               </p>
             </div>
 
@@ -146,7 +196,9 @@ export default function CoachPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold">Get my skin assessment</p>
-                <p className="text-xs text-white/70 mt-0.5">Hazel will ask a few questions and give you a personalised skin profile</p>
+                <p className="text-xs text-white/70 mt-0.5">
+                  A conversation that maps your skin, your concerns, and what'll actually work for you.
+                </p>
               </div>
             </button>
 
@@ -159,7 +211,7 @@ export default function CoachPage() {
 
             {/* Starter prompts */}
             <div className="flex flex-col gap-2">
-              {STARTERS.map(s => (
+              {starters.map(s => (
                 <button
                   key={s.text}
                   onClick={() => sendMessage(s.text)}
@@ -185,23 +237,19 @@ export default function CoachPage() {
                     <Leaf size={11} className="text-[#C17A5A]" />
                   </div>
                 )}
-                <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                    m.role === 'user'
-                      ? 'bg-[#C17A5A] text-white rounded-br-sm'
-                      : 'bg-white border border-stone-100 text-stone-800 rounded-bl-sm shadow-sm'
-                  }`}
-                >
+                <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  m.role === 'user'
+                    ? 'bg-[#C17A5A] text-white rounded-br-sm'
+                    : 'bg-white border border-stone-100 text-stone-800 rounded-bl-sm shadow-sm'
+                }`}>
                   {m.role === 'assistant' ? (
                     m.content ? (
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                        }}
-                      >
+                      <ReactMarkdown components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                      }}>
                         {m.content}
                       </ReactMarkdown>
                     ) : (
@@ -213,9 +261,7 @@ export default function CoachPage() {
                         ))}
                       </div>
                     )
-                  ) : (
-                    m.content
-                  )}
+                  ) : m.content}
                 </div>
               </motion.div>
             ))}
@@ -231,10 +277,7 @@ export default function CoachPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                sendMessage(input)
-              }
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
             }}
             placeholder="How are you feeling today..."
             className="resize-none min-h-[44px] max-h-32 border-stone-200 rounded-xl text-sm"
@@ -250,5 +293,19 @@ export default function CoachPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+// ── Exported page (wraps inner in Suspense for useSearchParams) ───────────────
+
+export default function CoachPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 size={20} className="animate-spin text-[#C17A5A]" />
+      </div>
+    }>
+      <CoachPageInner />
+    </Suspense>
   )
 }
