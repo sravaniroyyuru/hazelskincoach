@@ -127,7 +127,7 @@ export default function ProgressPage() {
                     <div className="w-full rounded-t-sm transition-all" style={{
                       height: `${Math.max(score * 100, c ? 8 : 4)}%`,
                       backgroundColor: c
-                        ? isToday ? '#7C6B5A' : '#C4B5A5'
+                        ? isToday ? '#C17A5A' : '#D4A898'
                         : '#E7E5E4',
                     }} />
                     <span className="text-[9px] text-stone-400">
@@ -152,7 +152,7 @@ export default function ProgressPage() {
 
             <div className="bg-white rounded-2xl p-4 border border-stone-100 shadow-sm">
               <div className="flex items-center gap-1.5 mb-1">
-                <Calendar size={14} className="text-[#7C6B5A]" />
+                <Calendar size={14} className="text-[#C17A5A]" />
                 <span className="text-xs text-stone-500">Routine</span>
               </div>
               <p className="text-2xl font-bold text-stone-800">

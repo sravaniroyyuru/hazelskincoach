@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900">
+    <div className="min-h-screen bg-[#FAF4EF] text-stone-900">
       {children}
       <Toaster position="top-center" />
     </div>

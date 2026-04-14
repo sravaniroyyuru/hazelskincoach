@@ -104,7 +104,7 @@ export default function SkinCamera({ angles, onComplete, onSkip }: Props) {
         <p className="text-stone-400 text-xs">You can add photos later from the Today tab.</p>
         {onSkip && (
           <Button variant="outline" onClick={onSkip}
-            className="rounded-xl border-[#7C6B5A] text-[#7C6B5A]">
+            className="rounded-xl border-[#C17A5A] text-[#C17A5A]">
             Skip for now
           </Button>
         )}
@@ -118,8 +118,8 @@ export default function SkinCamera({ angles, onComplete, onSkip }: Props) {
       <div className="flex gap-2 justify-center">
         {angles.map((a, i) => (
           <div key={a} className={`h-1.5 rounded-full transition-all duration-300 ${
-            i < currentIndex  ? 'w-4 bg-[#7C6B5A]' :
-            i === currentIndex ? 'w-6 bg-[#7C6B5A]' : 'w-1.5 bg-stone-300'
+            i < currentIndex  ? 'w-4 bg-[#C17A5A]' :
+            i === currentIndex ? 'w-6 bg-[#C17A5A]' : 'w-1.5 bg-stone-300'
           }`} />
         ))}
       </div>
@@ -176,7 +176,7 @@ export default function SkinCamera({ angles, onComplete, onSkip }: Props) {
             </Button>
           )}
           <Button onClick={capture} disabled={!cameraReady}
-            className="flex-1 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+            className="flex-1 bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
             <Camera size={16} className="mr-2" /> Take photo
           </Button>
         </div>
@@ -187,7 +187,7 @@ export default function SkinCamera({ angles, onComplete, onSkip }: Props) {
             <RefreshCw size={14} className="mr-2" /> Retake
           </Button>
           <Button onClick={accept}
-            className="flex-1 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+            className="flex-1 bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
             <Check size={14} className="mr-2" />
             {currentIndex < angles.length - 1 ? 'Next angle' : 'Done'}
           </Button>
@@ -200,8 +200,8 @@ export default function SkinCamera({ angles, onComplete, onSkip }: Props) {
           {Object.entries(captured).map(([angle, url]) => (
             <div key={angle} className="relative">
               <img src={url} alt={angle}
-                className="w-12 h-16 rounded-lg object-cover border-2 border-[#7C6B5A]" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#7C6B5A] rounded-full flex items-center justify-center">
+                className="w-12 h-16 rounded-lg object-cover border-2 border-[#C17A5A]" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#C17A5A] rounded-full flex items-center justify-center">
                 <Check size={9} className="text-white" />
               </div>
             </div>

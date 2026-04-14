@@ -84,7 +84,7 @@ export default function ReportPage() {
   return (
     <div className="px-5 pt-8 pb-4">
       <div className="flex items-center gap-2 mb-1">
-        <FileText size={18} className="text-[#7C6B5A]" />
+        <FileText size={18} className="text-[#C17A5A]" />
         <h1 className="text-xl font-semibold text-stone-800">Derm report</h1>
       </div>
       <p className="text-stone-500 text-sm mb-6">
@@ -108,7 +108,7 @@ export default function ReportPage() {
               <div className="flex items-center gap-2 mb-1.5">
                 <label className="text-xs text-stone-500">Specific concerns to raise</label>
                 {nudgeApplied && (
-                  <span className="text-[10px] bg-[#F5F0EB] text-[#7C6B5A] border border-[#E8DDD4] rounded-full px-2 py-0.5">
+                  <span className="text-[10px] bg-[#F8EDE6] text-[#C17A5A] border border-[#EDD5C8] rounded-full px-2 py-0.5">
                     Added from Hazel's observations
                   </span>
                 )}
@@ -132,7 +132,7 @@ export default function ReportPage() {
             <Button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl"
+              className="w-full bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl"
             >
               {isGenerating ? (
                 <><Loader2 size={16} className="animate-spin mr-2" /> Generating report...</>
@@ -150,7 +150,7 @@ export default function ReportPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
             {/* Regenerate button */}
             <Button variant="outline" size="sm" onClick={() => setReport(null)}
-              className="self-start rounded-xl border-[#7C6B5A] text-[#7C6B5A] mb-1">
+              className="self-start rounded-xl border-[#C17A5A] text-[#C17A5A] mb-1">
               ← Edit & regenerate
             </Button>
 
@@ -185,14 +185,14 @@ export default function ReportPage() {
             ))}
 
             {/* Questions for derm */}
-            <div className="bg-[#F5F0EB] rounded-2xl p-5 border border-[#E8DDD4]">
+            <div className="bg-[#F8EDE6] rounded-2xl p-5 border border-[#EDD5C8]">
               <h2 className="text-sm font-semibold text-stone-700 mb-3">
                 💬 Suggested questions for your dermatologist
               </h2>
               <ul className="flex flex-col gap-2">
                 {report.questionsForDerm.map((q, i) => (
                   <li key={i} className="flex gap-2 text-sm text-stone-600">
-                    <span className="text-[#7C6B5A] font-medium shrink-0">{i + 1}.</span>
+                    <span className="text-[#C17A5A] font-medium shrink-0">{i + 1}.</span>
                     {q}
                   </li>
                 ))}

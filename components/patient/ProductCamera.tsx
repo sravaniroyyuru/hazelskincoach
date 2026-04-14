@@ -159,7 +159,7 @@ export default function ProductCamera({ onProductFound, onClose }: Props) {
 
       {/* Scan result */}
       {result && (
-        <div className="bg-[#F5F0EB] rounded-2xl p-4 border border-[#E8DDD4]">
+        <div className="bg-[#F8EDE6] rounded-2xl p-4 border border-[#EDD5C8]">
           <div className="flex items-start justify-between gap-2 mb-2">
             <div>
               <p className="text-sm font-semibold text-stone-800">{result.name}</p>
@@ -189,7 +189,7 @@ export default function ProductCamera({ onProductFound, onClose }: Props) {
               <RefreshCw size={12} className="mr-1" /> Try again
             </Button>
             <Button size="sm" onClick={handleAdd}
-              className="flex-1 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-xl h-9 text-xs">
+              className="flex-1 bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl h-9 text-xs">
               <Check size={12} className="mr-1" /> Add product
             </Button>
           </div>
@@ -211,7 +211,7 @@ export default function ProductCamera({ onProductFound, onClose }: Props) {
               Cancel
             </Button>
             <Button onClick={capture} disabled={!cameraReady}
-              className="flex-1 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="flex-1 bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               <Camera size={16} className="mr-2" /> Capture
             </Button>
           </div>
@@ -222,7 +222,7 @@ export default function ProductCamera({ onProductFound, onClose }: Props) {
               <RefreshCw size={14} className="mr-2" /> Retake
             </Button>
             <Button onClick={scan} disabled={scanning}
-              className="flex-1 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="flex-1 bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               {scanning
                 ? <><Loader2 size={14} className="animate-spin mr-2" /> Scanning...</>
                 : <><Camera size={14} className="mr-2" /> Identify product</>}

@@ -26,7 +26,7 @@ export default function BottomNav() {
               href={href}
               className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors ${
                 active
-                  ? 'text-[#7C6B5A]'
+                  ? 'text-[#C17A5A]'
                   : 'text-stone-400 hover:text-stone-600'
               }`}
             >

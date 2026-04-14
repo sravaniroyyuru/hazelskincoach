@@ -153,8 +153,8 @@ export default function PhotoComparison({ earliest, latest }: Props) {
       {!isSameDate && (
         <div className="bg-white rounded-2xl p-4 border border-stone-100 shadow-sm">
           <div className="flex items-center gap-1.5 mb-2">
-            <Leaf size={12} className="text-[#7C6B5A]" />
-            <span className="text-xs font-medium text-[#7C6B5A] uppercase tracking-wide">
+            <Leaf size={12} className="text-[#C17A5A]" />
+            <span className="text-xs font-medium text-[#C17A5A] uppercase tracking-wide">
               Hazel's take
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function PhotoComparison({ earliest, latest }: Props) {
                 See how your skin has changed from {formatDate(earliest.date)} to {formatDate(latest.date)}.
               </p>
               <Button variant="outline" size="sm" onClick={loadComparison}
-                className="self-start h-7 text-xs rounded-xl border-[#7C6B5A] text-[#7C6B5A]">
+                className="self-start h-7 text-xs rounded-xl border-[#C17A5A] text-[#C17A5A]">
                 Analyse changes
               </Button>
             </div>

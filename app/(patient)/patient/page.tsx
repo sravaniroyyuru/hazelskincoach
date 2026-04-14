@@ -18,7 +18,7 @@ export default function PatientRoot() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-6 h-6 rounded-full border-2 border-[#7C6B5A] border-t-transparent animate-spin" />
+      <div className="w-6 h-6 rounded-full border-2 border-[#C17A5A] border-t-transparent animate-spin" />
     </div>
   )
 }

@@ -28,7 +28,8 @@
       "Bash(git checkout:*)",
       "Bash(GIT_EDITOR=true git merge --continue)",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(xargs sed:*)"
     ]
   }
 }

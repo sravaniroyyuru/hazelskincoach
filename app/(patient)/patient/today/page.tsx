@@ -199,7 +199,7 @@ export default function TodayPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-1.5 text-[#7C6B5A] mb-0.5">
+          <div className="flex items-center gap-1.5 text-[#C17A5A] mb-0.5">
             <Leaf size={14} />
             <span className="text-xs font-medium tracking-wide uppercase">hazel</span>
           </div>
@@ -232,7 +232,7 @@ export default function TodayPage() {
                       <button key={opt.value} onClick={() => handleAnswer(q.key, opt.value)}
                         className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm transition-colors ${
                           checkIn[q.key] === opt.value
-                            ? 'border-[#7C6B5A] bg-[#F5F0EB] text-stone-800'
+                            ? 'border-[#C17A5A] bg-[#F8EDE6] text-stone-800'
                             : 'border-stone-200 bg-stone-50 text-stone-600'
                         }`}>
                         <span>{opt.emoji}</span> {opt.label}
@@ -250,7 +250,7 @@ export default function TodayPage() {
               {CHECK_IN_QUESTIONS.slice(0, questionIndex).map(q => {
                 const opt = q.options.find(o => o.value === checkIn[q.key])
                 return opt ? (
-                  <span key={q.key} className="text-xs bg-[#F5F0EB] text-stone-600 rounded-full px-2.5 py-1">
+                  <span key={q.key} className="text-xs bg-[#F8EDE6] text-stone-600 rounded-full px-2.5 py-1">
                     {opt.emoji} {opt.label}
                   </span>
                 ) : null
@@ -298,15 +298,15 @@ export default function TodayPage() {
           {allAnswered && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
               <Button onClick={handleSubmit}
-                className="w-full bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-xl">
+                className="w-full bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl">
                 Save check-in
               </Button>
             </motion.div>
           )}
         </div>
       ) : (
-        <div className="bg-[#F5F0EB] rounded-2xl p-5 mb-5 border border-[#E8DDD4]">
-          <div className="flex items-center gap-2 text-[#7C6B5A]">
+        <div className="bg-[#F8EDE6] rounded-2xl p-5 mb-5 border border-[#EDD5C8]">
+          <div className="flex items-center gap-2 text-[#C17A5A]">
             <CheckCircle2 size={16} />
             <span className="text-sm font-medium">Check-in complete for today</span>
           </div>
@@ -319,12 +319,12 @@ export default function TodayPage() {
       {/* Skin photo update */}
       <div className={`rounded-2xl p-4 mb-4 border flex items-center justify-between ${
         todayPhotos
-          ? 'bg-[#F5F0EB] border-[#E8DDD4]'
+          ? 'bg-[#F8EDE6] border-[#EDD5C8]'
           : 'bg-white border-stone-100 shadow-sm'
       }`}>
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-            todayPhotos ? 'bg-[#7C6B5A]' : 'bg-stone-100'
+            todayPhotos ? 'bg-[#C17A5A]' : 'bg-stone-100'
           }`}>
             <Camera size={15} className={todayPhotos ? 'text-white' : 'text-stone-500'} />
           </div>
@@ -340,7 +340,7 @@ export default function TodayPage() {
         <Button variant="outline" size="sm" onClick={() => setShowPhotoDialog(true)}
           className={`rounded-xl text-xs h-8 ${
             todayPhotos
-              ? 'border-[#7C6B5A] text-[#7C6B5A]'
+              ? 'border-[#C17A5A] text-[#C17A5A]'
               : 'border-stone-200 text-stone-600'
           }`}>
           {todayPhotos ? 'Retake' : 'Take photos'}
@@ -380,7 +380,7 @@ export default function TodayPage() {
                 onClick={() => setAmChecks(prev => ({ ...prev, [step.id]: !prev[step.id] }))}
                 className="flex items-center gap-3 text-left">
                 {amChecks[step.id]
-                  ? <CheckCircle2 size={18} className="text-[#7C6B5A] shrink-0" />
+                  ? <CheckCircle2 size={18} className="text-[#C17A5A] shrink-0" />
                   : <Circle size={18} className="text-stone-300 shrink-0" />}
                 <div>
                   <p className={`text-sm ${amChecks[step.id] ? 'line-through text-stone-400' : 'text-stone-700'}`}>
@@ -404,7 +404,7 @@ export default function TodayPage() {
                 onClick={() => setPmChecks(prev => ({ ...prev, [step.id]: !prev[step.id] }))}
                 className="flex items-center gap-3 text-left">
                 {pmChecks[step.id]
-                  ? <CheckCircle2 size={18} className="text-[#7C6B5A] shrink-0" />
+                  ? <CheckCircle2 size={18} className="text-[#C17A5A] shrink-0" />
                   : <Circle size={18} className="text-stone-300 shrink-0" />}
                 <div>
                   <p className={`text-sm ${pmChecks[step.id] ? 'line-through text-stone-400' : 'text-stone-700'}`}>
@@ -422,7 +422,7 @@ export default function TodayPage() {
         <div className="bg-white rounded-2xl p-5 mb-4 text-center border border-stone-100">
           <p className="text-stone-500 text-sm mb-3">No routine steps yet.</p>
           <Link href="/patient/routine">
-            <Button variant="outline" size="sm" className="rounded-xl border-[#7C6B5A] text-[#7C6B5A]">
+            <Button variant="outline" size="sm" className="rounded-xl border-[#C17A5A] text-[#C17A5A]">
               Build your routine
             </Button>
           </Link>

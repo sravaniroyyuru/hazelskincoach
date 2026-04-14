@@ -101,7 +101,7 @@ export default function WelcomeTour() {
           >
             {/* Top bar */}
             <div className="flex items-center justify-between px-5 pt-5 pb-1">
-              <div className="flex items-center gap-1.5 text-[#7C6B5A]">
+              <div className="flex items-center gap-1.5 text-[#C17A5A]">
                 <Leaf size={14} />
                 <span className="text-xs font-medium tracking-wide uppercase">hazel</span>
               </div>
@@ -131,8 +131,8 @@ export default function WelcomeTour() {
                       <div
                         key={i}
                         className={`h-1.5 rounded-full transition-all duration-300 ${
-                          i === stepIndex - 1 ? 'w-5 bg-[#7C6B5A]' :
-                          i < stepIndex - 1 ? 'w-3 bg-[#C4B5A5]' : 'w-1.5 bg-stone-200'
+                          i === stepIndex - 1 ? 'w-5 bg-[#C17A5A]' :
+                          i < stepIndex - 1 ? 'w-3 bg-[#D4A898]' : 'w-1.5 bg-stone-200'
                         }`}
                       />
                     ))}
@@ -141,7 +141,7 @@ export default function WelcomeTour() {
 
                 <Button
                   onClick={next}
-                  className="w-full bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-xl h-11"
+                  className="w-full bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl h-11"
                 >
                   {current.cta}
                   {!isLast && <ChevronRight size={16} className="ml-1" />}

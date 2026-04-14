@@ -16,7 +16,7 @@ const ProductSchema = z.object({
 })
 
 const ProductListSchema = z.object({
-  results: z.array(ProductSchema).min(1).max(5),
+  results: z.array(ProductSchema),
 })
 
 export async function POST(request: Request) {

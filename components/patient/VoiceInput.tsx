@@ -98,7 +98,7 @@ export default function VoiceInput({ onTranscript, placeholder = 'Tap to speak..
         className={`flex items-center justify-center w-10 h-10 rounded-full transition-all ${
           isListening
             ? 'bg-red-500 text-white shadow-lg shadow-red-200'
-            : 'bg-[#F5F0EB] text-[#7C6B5A] hover:bg-[#EDE5DC]'
+            : 'bg-[#F8EDE6] text-[#C17A5A] hover:bg-[#EDE5DC]'
         }`}
         title={isListening ? 'Stop recording' : 'Speak'}
       >

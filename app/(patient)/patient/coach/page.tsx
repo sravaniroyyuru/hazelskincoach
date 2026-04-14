@@ -109,10 +109,10 @@ export default function CoachPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Header */}
-      <div className="px-5 pt-8 pb-4 border-b border-stone-100 bg-[#FAF8F5]">
+      <div className="px-5 pt-8 pb-4 border-b border-stone-100 bg-[#FAF4EF]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#F5F0EB] flex items-center justify-center">
-            <Leaf size={14} className="text-[#7C6B5A]" />
+          <div className="w-8 h-8 rounded-full bg-[#F8EDE6] flex items-center justify-center">
+            <Leaf size={14} className="text-[#C17A5A]" />
           </div>
           <div>
             <p className="text-sm font-semibold text-stone-800">Hazel</p>
@@ -127,8 +127,8 @@ export default function CoachPage() {
           <div className="flex flex-col gap-4 py-6">
             {/* Header */}
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-[#F5F0EB] flex items-center justify-center mx-auto mb-3">
-                <Leaf size={20} className="text-[#7C6B5A]" />
+              <div className="w-12 h-12 rounded-full bg-[#F8EDE6] flex items-center justify-center mx-auto mb-3">
+                <Leaf size={20} className="text-[#C17A5A]" />
               </div>
               <p className="text-stone-700 font-medium">This is your space</p>
               <p className="text-stone-400 text-sm mt-1 leading-relaxed">
@@ -139,7 +139,7 @@ export default function CoachPage() {
             {/* Skin assessment CTA */}
             <button
               onClick={() => sendMessage(ASSESSMENT_PROMPT)}
-              className="w-full p-4 bg-[#7C6B5A] rounded-2xl text-left text-white flex items-center gap-3 hover:bg-[#6B5A4A] transition-colors"
+              className="w-full p-4 bg-[#C17A5A] rounded-2xl text-left text-white flex items-center gap-3 hover:bg-[#A86848] transition-colors"
             >
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                 <Sparkles size={18} className="text-white" />
@@ -163,7 +163,7 @@ export default function CoachPage() {
                 <button
                   key={s.text}
                   onClick={() => sendMessage(s.text)}
-                  className="text-sm text-left px-4 py-3 bg-white border border-stone-200 rounded-xl text-stone-600 hover:border-[#7C6B5A] hover:text-stone-800 transition-colors flex items-center gap-3"
+                  className="text-sm text-left px-4 py-3 bg-white border border-stone-200 rounded-xl text-stone-600 hover:border-[#C17A5A] hover:text-stone-800 transition-colors flex items-center gap-3"
                 >
                   <span className="text-base shrink-0">{s.emoji}</span>
                   <span>{s.text}</span>
@@ -181,14 +181,14 @@ export default function CoachPage() {
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-full bg-[#F5F0EB] flex items-center justify-center mr-2 mt-1 shrink-0">
-                    <Leaf size={11} className="text-[#7C6B5A]" />
+                  <div className="w-6 h-6 rounded-full bg-[#F8EDE6] flex items-center justify-center mr-2 mt-1 shrink-0">
+                    <Leaf size={11} className="text-[#C17A5A]" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     m.role === 'user'
-                      ? 'bg-[#7C6B5A] text-white rounded-br-sm'
+                      ? 'bg-[#C17A5A] text-white rounded-br-sm'
                       : 'bg-white border border-stone-100 text-stone-800 rounded-bl-sm shadow-sm'
                   }`}
                 >
@@ -243,7 +243,7 @@ export default function CoachPage() {
           <Button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-xl h-11 w-11 p-0 shrink-0"
+            className="bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl h-11 w-11 p-0 shrink-0"
           >
             {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </Button>

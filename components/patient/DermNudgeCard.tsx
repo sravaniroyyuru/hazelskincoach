@@ -38,7 +38,7 @@ export default function DermNudgeCard({ nudgeId, findings, onDismiss }: Props) {
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <FileText size={13} className="text-[#7C6B5A] shrink-0" />
+          <FileText size={13} className="text-[#C17A5A] shrink-0" />
           <p className="text-xs font-semibold text-stone-700">Worth mentioning to your derm</p>
         </div>
         <button onClick={handleDismiss}
@@ -50,7 +50,7 @@ export default function DermNudgeCard({ nudgeId, findings, onDismiss }: Props) {
       <ul className="flex flex-col gap-1 mb-3 pl-1">
         {findings.slice(0, 3).map((f, i) => (
           <li key={i} className="text-xs text-stone-600 flex gap-1.5">
-            <span className="text-[#7C6B5A] shrink-0">•</span> {f}
+            <span className="text-[#C17A5A] shrink-0">•</span> {f}
           </li>
         ))}
       </ul>
@@ -61,7 +61,7 @@ export default function DermNudgeCard({ nudgeId, findings, onDismiss }: Props) {
           Not now
         </Button>
         <Button size="sm" onClick={handleAddToReport}
-          className="flex-1 h-8 text-xs rounded-xl bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white">
+          className="flex-1 h-8 text-xs rounded-xl bg-[#C17A5A] hover:bg-[#A86848] text-white">
           Add to report →
         </Button>
       </div>

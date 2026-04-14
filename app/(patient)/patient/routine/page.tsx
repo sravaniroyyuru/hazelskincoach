@@ -99,6 +99,14 @@ export default function RoutinePage() {
     toast.success('Step removed')
   }
 
+  // Debounced search as you type
+  useEffect(() => {
+    if (productSearch.trim().length < 3) { setSearchResults([]); return }
+    const t = setTimeout(() => handleProductLookup(), 500)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productSearch])
+
   async function handleProductLookup() {
     if (!productSearch.trim()) return
     setIsLooking(true)
@@ -163,7 +171,7 @@ export default function RoutinePage() {
               {time === 'am' ? 'Morning' : 'Evening'} routine
             </h2>
           </div>
-          <Button variant="ghost" size="sm" className="text-[#7C6B5A] h-7 px-2 rounded-lg"
+          <Button variant="ghost" size="sm" className="text-[#C17A5A] h-7 px-2 rounded-lg"
             onClick={() => openAdd(time)}>
             <Plus size={14} className="mr-1" /> Add step
           </Button>
@@ -285,7 +293,7 @@ export default function RoutinePage() {
             <div>
               <label className="text-xs text-stone-500 mb-1.5 block">Linked product (optional)</label>
               {stepProductId ? (
-                <div className="flex items-center justify-between bg-[#F5F0EB] rounded-xl px-3 py-2">
+                <div className="flex items-center justify-between bg-[#F8EDE6] rounded-xl px-3 py-2">
                   <span className="text-sm text-stone-700">
                     {products.find(p => p.id === stepProductId)?.name ?? 'Product'}
                   </span>
@@ -308,18 +316,16 @@ export default function RoutinePage() {
 
                   {/* Always-visible search */}
                   <div className="flex flex-col gap-2 p-3 bg-stone-50 rounded-xl border border-stone-100">
-                    <div className="flex gap-2">
+                    <div className="relative">
                       <Input
-                        placeholder="Search product name or brand..."
+                        placeholder="Type a product name or brand..."
                         value={productSearch}
-                        onChange={e => { setProductSearch(e.target.value); setSearchResults([]) }}
-                        onKeyDown={e => e.key === 'Enter' && handleProductLookup()}
-                        className="border-stone-200 h-9 text-sm bg-white"
+                        onChange={e => setProductSearch(e.target.value)}
+                        className="border-stone-200 h-9 text-sm bg-white pr-8"
                       />
-                      <Button size="sm" onClick={handleProductLookup} disabled={isLooking || !productSearch.trim()}
-                        className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-9 px-3 shrink-0">
-                        {isLooking ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
-                      </Button>
+                      {isLooking && (
+                        <Loader2 size={13} className="animate-spin absolute right-3 top-2.5 text-stone-400" />
+                      )}
                     </div>
                     {searchResults.length > 0 && (
                       <div className="flex flex-col gap-2">
@@ -335,7 +341,7 @@ export default function RoutinePage() {
                               )}
                             </div>
                             <button onClick={() => handleAddFoundProduct(result)}
-                              className="shrink-0 text-xs bg-[#7C6B5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#6B5A4A]">
+                              className="shrink-0 text-xs bg-[#C17A5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#A86848]">
                               Add
                             </button>
                           </div>
@@ -343,7 +349,7 @@ export default function RoutinePage() {
                       </div>
                     )}
                     <button
-                      className="text-xs text-[#7C6B5A] text-left hover:underline flex items-center gap-1 self-start"
+                      className="text-xs text-[#C17A5A] text-left hover:underline flex items-center gap-1 self-start"
                       onClick={() => setShowProductCamera(true)}
                     >
                       <ScanLine size={11} /> Or scan product photo
@@ -368,7 +374,7 @@ export default function RoutinePage() {
             <Button variant="outline" onClick={() => setDialog(d => ({ ...d, open: false }))}
               className="rounded-xl flex-1">Cancel</Button>
             <Button onClick={handleSaveStep} disabled={!stepName.trim()}
-              className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-xl flex-1">
+              className="bg-[#C17A5A] hover:bg-[#A86848] text-white rounded-xl flex-1">
               {dialog.editing ? 'Save changes' : 'Add step'}
             </Button>
           </DialogFooter>
@@ -380,7 +386,7 @@ export default function RoutinePage() {
         <DialogContent className="rounded-2xl max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-base flex items-center gap-2">
-              <ScanLine size={16} className="text-[#7C6B5A]" /> Scan product
+              <ScanLine size={16} className="text-[#C17A5A]" /> Scan product
             </DialogTitle>
           </DialogHeader>
           <p className="text-xs text-stone-400 -mt-2">

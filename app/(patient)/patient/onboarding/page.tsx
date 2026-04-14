@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { saveSnapshot, savePhotoSet } from '@/lib/patient/storage'
@@ -98,6 +98,14 @@ export default function OnboardingPage() {
     if (idx > 0) setStep(STEPS[idx - 1])
   }
 
+  // Debounced search as you type
+  useEffect(() => {
+    if (productQuery.trim().length < 3) { setSearchResults([]); return }
+    const t = setTimeout(() => handleProductSearch(), 500)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productQuery])
+
   async function handleProductSearch() {
     if (!productQuery.trim()) return
     setIsSearching(true)
@@ -179,10 +187,10 @@ export default function OnboardingPage() {
   // photo-review has its own retake button
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-[#FAF4EF] flex flex-col items-center justify-center px-6 py-12">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-8">
-        <Leaf className="text-[#7C6B5A]" size={22} />
+        <Leaf className="text-[#C17A5A]" size={22} />
         <span className="text-lg font-semibold tracking-wide text-stone-800">hazel</span>
       </div>
 
@@ -193,8 +201,8 @@ export default function OnboardingPage() {
             const adjustedIndex = stepIndex > STEPS.indexOf('photo-review') ? stepIndex - 1 : stepIndex
             return (
               <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === adjustedIndex ? 'w-6 bg-[#7C6B5A]' :
-                i < adjustedIndex  ? 'w-4 bg-[#C4B5A5]' : 'w-1.5 bg-stone-300'
+                i === adjustedIndex ? 'w-6 bg-[#C17A5A]' :
+                i < adjustedIndex  ? 'w-4 bg-[#D4A898]' : 'w-1.5 bg-stone-300'
               }`} />
             )
           })}
@@ -220,7 +228,7 @@ export default function OnboardingPage() {
               autoFocus
             />
             <Button onClick={next} disabled={!userName.trim()}
-              className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               Continue <ChevronRight size={16} className="ml-1" />
             </Button>
           </motion.div>
@@ -244,19 +252,19 @@ export default function OnboardingPage() {
                 <button key={value} onClick={() => toggleSkinType(value)}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left transition-colors ${
                     skinTypes.includes(value)
-                      ? 'border-[#7C6B5A] bg-[#F5F0EB]'
+                      ? 'border-[#C17A5A] bg-[#F8EDE6]'
                       : 'border-stone-200 bg-white hover:border-stone-300'
                   }`}>
                   <div>
                     <div className="font-medium text-stone-800">{label}</div>
                     <div className="text-xs text-stone-500 mt-0.5">{description}</div>
                   </div>
-                  {skinTypes.includes(value) && <Check size={16} className="text-[#7C6B5A]" />}
+                  {skinTypes.includes(value) && <Check size={16} className="text-[#C17A5A]" />}
                 </button>
               ))}
             </div>
             <Button onClick={next} disabled={skinTypes.length === 0}
-              className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               Continue <ChevronRight size={16} className="ml-1" />
             </Button>
           </motion.div>
@@ -280,7 +288,7 @@ export default function OnboardingPage() {
                 <button key={value} onClick={() => toggleConcern(value)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm transition-colors ${
                     concerns.includes(value)
-                      ? 'border-[#7C6B5A] bg-[#F5F0EB] text-stone-800'
+                      ? 'border-[#C17A5A] bg-[#F8EDE6] text-stone-800'
                       : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
                   }`}>
                   <span>{emoji}</span> {label}
@@ -288,7 +296,7 @@ export default function OnboardingPage() {
               ))}
             </div>
             <Button onClick={next} disabled={concerns.length === 0}
-              className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               Continue <ChevronRight size={16} className="ml-1" />
             </Button>
           </motion.div>
@@ -312,7 +320,7 @@ export default function OnboardingPage() {
                 <button key={value} onClick={() => toggleGoal(value)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-full border text-sm transition-colors ${
                     goals.includes(value)
-                      ? 'border-[#7C6B5A] bg-[#F5F0EB] text-stone-800'
+                      ? 'border-[#C17A5A] bg-[#F8EDE6] text-stone-800'
                       : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
                   }`}>
                   <span>{emoji}</span> {label}
@@ -320,7 +328,7 @@ export default function OnboardingPage() {
               ))}
             </div>
             <Button onClick={next} disabled={goals.length === 0}
-              className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               Continue <ChevronRight size={16} className="ml-1" />
             </Button>
           </motion.div>
@@ -345,25 +353,23 @@ export default function OnboardingPage() {
             {/* Search */}
             <div className="bg-white rounded-2xl p-4 border border-stone-200 flex flex-col gap-3">
               <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">Search by name</p>
-              <div className="flex gap-2">
+              <div className="relative">
                 <Input
                   placeholder="e.g. CeraVe Moisturiser, Niacinamide..."
                   value={productQuery}
-                  onChange={e => { setProductQuery(e.target.value); setSearchResults([]) }}
-                  onKeyDown={e => e.key === 'Enter' && handleProductSearch()}
-                  className="border-stone-200 h-10 text-sm"
+                  onChange={e => setProductQuery(e.target.value)}
+                  className="border-stone-200 h-10 text-sm pr-8"
                 />
-                <Button size="sm" onClick={handleProductSearch} disabled={isSearching || !productQuery.trim()}
-                  className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-10 px-3 shrink-0">
-                  {isSearching ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
-                </Button>
+                {isSearching && (
+                  <Loader2 size={14} className="animate-spin absolute right-3 top-3 text-stone-400" />
+                )}
               </div>
 
               {searchResults.length > 0 && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="flex flex-col gap-2">
                   {searchResults.map((result, i) => (
-                    <div key={i} className="p-3 bg-[#F5F0EB] rounded-xl border border-[#E8DDD4] flex items-start justify-between gap-2">
+                    <div key={i} className="p-3 bg-[#F8EDE6] rounded-xl border border-[#EDD5C8] flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-stone-800">{result.name}</p>
                         {result.brand && <p className="text-xs text-stone-500">{result.brand}</p>}
@@ -374,7 +380,7 @@ export default function OnboardingPage() {
                         )}
                       </div>
                       <button onClick={() => addFoundProduct(result)}
-                        className="shrink-0 text-xs bg-[#7C6B5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#6B5A4A]">
+                        className="shrink-0 text-xs bg-[#C17A5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#A86848]">
                         Add
                       </button>
                     </div>
@@ -385,9 +391,9 @@ export default function OnboardingPage() {
 
             {/* Camera scan */}
             <button onClick={() => setShowCamera(true)}
-              className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-stone-200 text-left hover:border-[#7C6B5A] transition-colors">
-              <div className="w-10 h-10 rounded-full bg-[#F5F0EB] flex items-center justify-center shrink-0">
-                <ScanLine size={18} className="text-[#7C6B5A]" />
+              className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-stone-200 text-left hover:border-[#C17A5A] transition-colors">
+              <div className="w-10 h-10 rounded-full bg-[#F8EDE6] flex items-center justify-center shrink-0">
+                <ScanLine size={18} className="text-[#C17A5A]" />
               </div>
               <div>
                 <p className="text-sm font-medium text-stone-800">Scan a product photo</p>
@@ -415,7 +421,7 @@ export default function OnboardingPage() {
 
             <div className="flex flex-col gap-2 pt-1">
               <Button onClick={next}
-                className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+                className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
                 {products.length > 0
                   ? `Continue with ${products.length} product${products.length > 1 ? 's' : ''}`
                   : 'Continue'} <ChevronRight size={16} className="ml-1" />
@@ -480,7 +486,7 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-3 gap-3">
               {PHOTO_ANGLES.map(angle => (
                 <div key={angle} className="flex flex-col items-center gap-1.5">
-                  <div className="w-full aspect-square rounded-2xl overflow-hidden border-2 border-[#7C6B5A] bg-stone-100">
+                  <div className="w-full aspect-square rounded-2xl overflow-hidden border-2 border-[#C17A5A] bg-stone-100">
                     <img
                       src={capturedPhotos[angle]}
                       alt={`${angle} view`}
@@ -494,7 +500,7 @@ export default function OnboardingPage() {
 
             <div className="flex flex-col gap-2">
               <Button onClick={next}
-                className="bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+                className="bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
                 Continue <ChevronRight size={16} className="ml-1" />
               </Button>
               <button
@@ -511,8 +517,8 @@ export default function OnboardingPage() {
         {step === 'welcome' && (
           <motion.div key="welcome" custom={direction} variants={variants} initial="enter" animate="center" exit="exit"
             transition={{ duration: 0.25 }} className="w-full max-w-sm flex flex-col items-center gap-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-[#F5F0EB] flex items-center justify-center">
-              <Leaf className="text-[#7C6B5A]" size={28} />
+            <div className="w-16 h-16 rounded-full bg-[#F8EDE6] flex items-center justify-center">
+              <Leaf className="text-[#C17A5A]" size={28} />
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-stone-800 mb-2">
@@ -525,7 +531,7 @@ export default function OnboardingPage() {
               </p>
             </div>
             <Button onClick={handleComplete}
-              className="w-full bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white h-12 rounded-xl">
+              className="w-full bg-[#C17A5A] hover:bg-[#A86848] text-white h-12 rounded-xl">
               Start my skin journey
             </Button>
           </motion.div>

@@ -25,9 +25,9 @@ export default function SkinAnalysisCard({ analysis, isLoading }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#F5F0EB] rounded-2xl p-4 border border-[#E8DDD4] flex items-center gap-3"
+        className="bg-[#F8EDE6] rounded-2xl p-4 border border-[#EDD5C8] flex items-center gap-3"
       >
-        <Loader2 size={15} className="text-[#7C6B5A] animate-spin shrink-0" />
+        <Loader2 size={15} className="text-[#C17A5A] animate-spin shrink-0" />
         <p className="text-sm text-stone-500 italic">Hazel is looking at your skin…</p>
       </motion.div>
     )
@@ -40,13 +40,13 @@ export default function SkinAnalysisCard({ analysis, isLoading }: Props) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-[#F5F0EB] rounded-2xl p-4 border border-[#E8DDD4]"
+      className="bg-[#F8EDE6] rounded-2xl p-4 border border-[#EDD5C8]"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
-          <Leaf size={13} className="text-[#7C6B5A]" />
-          <span className="text-xs font-medium text-[#7C6B5A] uppercase tracking-wide">
+          <Leaf size={13} className="text-[#C17A5A]" />
+          <span className="text-xs font-medium text-[#C17A5A] uppercase tracking-wide">
             Hazel's observations
           </span>
         </div>
