@@ -15,6 +15,10 @@ const ProductSchema = z.object({
   summary: z.string(),
 })
 
+const ProductListSchema = z.object({
+  results: z.array(ProductSchema).min(1).max(5),
+})
+
 export async function POST(request: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'ANTHROPIC_API_KEY not configured on server' }, { status: 500 })
@@ -25,17 +29,15 @@ export async function POST(request: Request) {
   try {
     const { object } = await generateObject({
       model: anthropic('claude-haiku-4-5-20251001'),
-      schema: ProductSchema,
-      prompt: `Look up this skincare product and return structured info: "${query}"
+      schema: ProductListSchema,
+      prompt: `Search for skincare products matching: "${query}"
 
-Return the product name, brand, category (e.g. cleanser, moisturiser, serum, SPF, toner, exfoliant, treatment),
-key active ingredients (max 5), any flags (e.g. "fragrance-free", "reef-safe", "retinol", "acids - don't layer"),
-and a one-sentence summary of what it does.
+Return up to 5 real matching products. If the query is specific (e.g. a full product name), return exact matches and close variants. If it's vague (e.g. "vitamin c serum"), return the most popular/well-known options across different brands.
 
-If the product doesn't exist or you're unsure, make a reasonable inference based on the query.`,
+For each product return: exact product name, brand, category (cleanser / moisturiser / serum / SPF / toner / exfoliant / treatment / eye cream / oil / mist), key active ingredients (max 5), flags (e.g. "fragrance-free", "reef-safe", "contains retinol", "avoid with acids"), and a one-sentence summary of what it does.`,
     })
 
-    return Response.json(object)
+    return Response.json(object.results)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Could not look up product'
     return Response.json({ error: message }, { status: 500 })

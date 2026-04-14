@@ -73,7 +73,7 @@ export default function OnboardingPage() {
   // Product search state
   const [productQuery, setProductQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const [foundProduct, setFoundProduct] = useState<Partial<RoutineProduct> | null>(null)
+  const [searchResults, setSearchResults] = useState<Partial<RoutineProduct>[]>([])
   const [showCamera, setShowCamera] = useState(false)
 
   function toggleSkinType(t: SkinType) {
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
   async function handleProductSearch() {
     if (!productQuery.trim()) return
     setIsSearching(true)
-    setFoundProduct(null)
+    setSearchResults([])
     try {
       const res = await fetch('/api/patient/product-lookup', {
         method: 'POST',
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setFoundProduct(data)
+      setSearchResults(Array.isArray(data) ? data : [data])
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not find product — try again')
     } finally {
@@ -118,19 +118,18 @@ export default function OnboardingPage() {
     }
   }
 
-  function addFoundProduct() {
-    if (!foundProduct?.name) return
+  function addFoundProduct(found: Partial<RoutineProduct>) {
     const p: RoutineProduct = {
       id: uuidv4(),
-      name: foundProduct.name ?? '',
-      brand: foundProduct.brand ?? null,
-      category: foundProduct.category ?? null,
-      keyIngredients: foundProduct.keyIngredients ?? [],
-      flags: foundProduct.flags ?? [],
+      name: found.name ?? '',
+      brand: found.brand ?? null,
+      category: found.category ?? null,
+      keyIngredients: found.keyIngredients ?? [],
+      flags: found.flags ?? [],
       status: 'active',
     }
     setProducts(prev => [...prev, p])
-    setFoundProduct(null)
+    setSearchResults([])
     setProductQuery('')
     toast.success(`${p.name} added`)
   }
@@ -350,7 +349,7 @@ export default function OnboardingPage() {
                 <Input
                   placeholder="e.g. CeraVe Moisturiser, Niacinamide..."
                   value={productQuery}
-                  onChange={e => { setProductQuery(e.target.value); setFoundProduct(null) }}
+                  onChange={e => { setProductQuery(e.target.value); setSearchResults([]) }}
                   onKeyDown={e => e.key === 'Enter' && handleProductSearch()}
                   className="border-stone-200 h-10 text-sm"
                 />
@@ -360,20 +359,26 @@ export default function OnboardingPage() {
                 </Button>
               </div>
 
-              {foundProduct && (
+              {searchResults.length > 0 && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                  className="p-3 bg-[#F5F0EB] rounded-xl border border-[#E8DDD4]">
-                  <p className="text-sm font-medium text-stone-800">{foundProduct.name}</p>
-                  {foundProduct.brand && <p className="text-xs text-stone-500">{foundProduct.brand}</p>}
-                  {foundProduct.keyIngredients && foundProduct.keyIngredients.length > 0 && (
-                    <p className="text-xs text-stone-400 mt-1">
-                      Key: {foundProduct.keyIngredients.slice(0, 3).join(', ')}
-                    </p>
-                  )}
-                  <Button size="sm" onClick={addFoundProduct}
-                    className="mt-2 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-7 text-xs">
-                    + Add this product
-                  </Button>
+                  className="flex flex-col gap-2">
+                  {searchResults.map((result, i) => (
+                    <div key={i} className="p-3 bg-[#F5F0EB] rounded-xl border border-[#E8DDD4] flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-stone-800">{result.name}</p>
+                        {result.brand && <p className="text-xs text-stone-500">{result.brand}</p>}
+                        {result.keyIngredients && result.keyIngredients.length > 0 && (
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            {result.keyIngredients.slice(0, 3).join(' · ')}
+                          </p>
+                        )}
+                      </div>
+                      <button onClick={() => addFoundProduct(result)}
+                        className="shrink-0 text-xs bg-[#7C6B5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#6B5A4A]">
+                        Add
+                      </button>
+                    </div>
+                  ))}
                 </motion.div>
               )}
             </div>

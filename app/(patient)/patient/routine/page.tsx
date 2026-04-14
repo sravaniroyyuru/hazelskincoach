@@ -40,8 +40,7 @@ export default function RoutinePage() {
   const [dialog, setDialog] = useState<StepDialogState>({ open: false, editing: null, timeOfDay: 'am' })
   const [productSearch, setProductSearch] = useState('')
   const [isLooking, setIsLooking] = useState(false)
-  const [foundProduct, setFoundProduct] = useState<Partial<RoutineProduct> | null>(null)
-  const [showProductSearch, setShowProductSearch] = useState(false)
+  const [searchResults, setSearchResults] = useState<Partial<RoutineProduct>[]>([])
   const [showProductCamera, setShowProductCamera] = useState(false)
 
   // Step form state
@@ -61,7 +60,7 @@ export default function RoutinePage() {
     setStepFrequency('daily')
     setStepNotes('')
     setStepProductId(null)
-    setFoundProduct(null)
+    setSearchResults([])
     setDialog({ open: true, editing: null, timeOfDay })
   }
 
@@ -70,7 +69,7 @@ export default function RoutinePage() {
     setStepFrequency(step.frequency)
     setStepNotes(step.usageNotes)
     setStepProductId(step.productId)
-    setFoundProduct(null)
+    setSearchResults([])
     setDialog({ open: true, editing: step, timeOfDay: step.timeOfDay })
   }
 
@@ -103,7 +102,7 @@ export default function RoutinePage() {
   async function handleProductLookup() {
     if (!productSearch.trim()) return
     setIsLooking(true)
-    setFoundProduct(null)
+    setSearchResults([])
     try {
       const res = await fetch('/api/patient/product-lookup', {
         method: 'POST',
@@ -112,7 +111,7 @@ export default function RoutinePage() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setFoundProduct(data)
+      setSearchResults(Array.isArray(data) ? data : [data])
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not look up product')
     } finally {
@@ -120,23 +119,21 @@ export default function RoutinePage() {
     }
   }
 
-  function handleAddFoundProduct() {
-    if (!foundProduct?.name) return
+  function handleAddFoundProduct(found: Partial<RoutineProduct>) {
     const product: RoutineProduct = {
       id: uuidv4(),
-      name: foundProduct.name ?? '',
-      brand: foundProduct.brand ?? null,
-      category: foundProduct.category ?? null,
-      keyIngredients: foundProduct.keyIngredients ?? [],
-      flags: foundProduct.flags ?? [],
+      name: found.name ?? '',
+      brand: found.brand ?? null,
+      category: found.category ?? null,
+      keyIngredients: found.keyIngredients ?? [],
+      flags: found.flags ?? [],
       status: 'active',
     }
     saveProduct(product)
     setProducts(getSnapshot().products)
     setStepProductId(product.id)
-    setShowProductSearch(false)
     setProductSearch('')
-    setFoundProduct(null)
+    setSearchResults([])
     toast.success(`${product.name} added`)
   }
 
@@ -315,7 +312,7 @@ export default function RoutinePage() {
                       <Input
                         placeholder="Search product name or brand..."
                         value={productSearch}
-                        onChange={e => { setProductSearch(e.target.value); setFoundProduct(null) }}
+                        onChange={e => { setProductSearch(e.target.value); setSearchResults([]) }}
                         onKeyDown={e => e.key === 'Enter' && handleProductLookup()}
                         className="border-stone-200 h-9 text-sm bg-white"
                       />
@@ -324,19 +321,25 @@ export default function RoutinePage() {
                         {isLooking ? <Loader2 size={14} className="animate-spin" /> : 'Find'}
                       </Button>
                     </div>
-                    {foundProduct && (
-                      <div className="p-3 bg-white rounded-lg border border-stone-200">
-                        <p className="text-sm font-medium text-stone-800">{foundProduct.name}</p>
-                        {foundProduct.brand && <p className="text-xs text-stone-500">{foundProduct.brand}</p>}
-                        {foundProduct.keyIngredients && foundProduct.keyIngredients.length > 0 && (
-                          <p className="text-xs text-stone-400 mt-1">
-                            Key: {foundProduct.keyIngredients.slice(0, 3).join(', ')}
-                          </p>
-                        )}
-                        <Button size="sm" className="mt-2 bg-[#7C6B5A] hover:bg-[#6B5A4A] text-white rounded-lg h-7 text-xs"
-                          onClick={handleAddFoundProduct}>
-                          Add to library
-                        </Button>
+                    {searchResults.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        {searchResults.map((result, i) => (
+                          <div key={i} className="p-3 bg-white rounded-lg border border-stone-200 flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-stone-800">{result.name}</p>
+                              {result.brand && <p className="text-xs text-stone-500">{result.brand}</p>}
+                              {result.keyIngredients && result.keyIngredients.length > 0 && (
+                                <p className="text-xs text-stone-400 mt-0.5">
+                                  {result.keyIngredients.slice(0, 3).join(' · ')}
+                                </p>
+                              )}
+                            </div>
+                            <button onClick={() => handleAddFoundProduct(result)}
+                              className="shrink-0 text-xs bg-[#7C6B5A] text-white rounded-lg px-2.5 py-1.5 hover:bg-[#6B5A4A]">
+                              Add
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                     <button
