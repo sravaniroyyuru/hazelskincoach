@@ -26,18 +26,21 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // /login is the fallback catch page; clinic staff don't have a separate auth UI yet
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/register')
 
   if (!user && !isAuthRoute) {
+    // Redirect unauthenticated clinic-route visitors to the patient hub
+    // (middleware only runs on clinic routes — see middleware.ts matcher)
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/patient'
     return NextResponse.redirect(url)
   }
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/appointments'
     return NextResponse.redirect(url)
   }
 
