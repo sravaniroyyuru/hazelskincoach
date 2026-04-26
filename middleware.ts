@@ -4,15 +4,8 @@ import { updateSession } from '@/lib/supabase/middleware'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Patient routes are localStorage-based — never need Supabase auth
-  if (pathname === '/' || pathname.startsWith('/patient')) {
-    return NextResponse.next({ request })
-  }
-
-  // Only protect clinic dashboard and auth routes
+  // Only protect clinic dashboard routes — never patient or root
   const isClinicRoute =
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/register') ||
     pathname.startsWith('/appointments') ||
     pathname.startsWith('/calls') ||
     pathname.startsWith('/patients') ||
@@ -31,8 +24,14 @@ export async function middleware(request: NextRequest) {
   return await updateSession(request)
 }
 
+// Only run middleware on clinic dashboard routes
+// Explicitly exclude / and /patient/* so they are never intercepted
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/vapi|api/twilio|api/patient|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/appointments/:path*',
+    '/calls/:path*',
+    '/patients/:path*',
+    '/settings/:path*',
+    '/sms/:path*',
   ],
 }
